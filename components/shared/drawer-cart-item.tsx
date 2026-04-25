@@ -35,7 +35,7 @@ export const DrawerCartItem: React.FC<Props> = ({
   };
 
   return (
-    <div className={cn('flex bg-white p-5 gap-6', className)}>
+    <div className={cn('flex bg-white p-3 sm:p-5 gap-3 sm:gap-6', className)}>
       <CartItemDetailsImage src={imageUrl} />
 
       <div className="flex-1">

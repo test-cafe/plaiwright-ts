@@ -8,7 +8,6 @@ import { Button } from '../ui/button';
 import { Title } from './title';
 import { PizzaSelector } from './pizza-selector';
 import { IProduct, useChoosePizza } from '@/hooks/use-choose-pizza';
-import { useSet } from 'react-use';
 import toast from 'react-hot-toast';
 
 interface Props {
@@ -60,10 +59,10 @@ export const ChoosePizzaForm: React.FC<Props> = ({
   };
 
   return (
-    <div className={cn(className, 'flex flex-1')}>
+    <div className={cn(className, 'flex flex-col md:flex-row flex-1')}>
       <PizzaImage imageUrl={imageUrl} size={size} />
 
-      <div className="w-[490px] bg-[#FCFCFC] p-7">
+      <div className="w-full md:w-[490px] bg-[#FCFCFC] p-4 md:p-7">
         <Title text={name} size="md" className="font-extrabold mb-1" />
 
         <p className="text-gray-400">{textDetaills}</p>
@@ -76,7 +75,7 @@ export const ChoosePizzaForm: React.FC<Props> = ({
           onClickPizzaType={setPizzaType}
         />
 
-        <div className="bg-gray-50 p-5 rounded-md h-[420px] overflow-auto scrollbar">
+        <div className="bg-gray-50 p-5 rounded-md h-[300px] md:h-[420px] overflow-auto scrollbar">
           <IngredientsList
             ingredients={ingredients}
             onClickAdd={toggleAddIngredient}

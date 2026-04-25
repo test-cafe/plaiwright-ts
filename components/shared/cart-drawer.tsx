@@ -29,23 +29,23 @@ export const CartDrawer: React.FC<React.PropsWithChildren> = ({ children }) => {
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent data-testid="cart-drawer" className="flex flex-col justify-between pb-0 bg-[#F4F1EE]">
         <div className={clsx('flex flex-col h-full', !totalAmount && 'justify-center')}>
-          {totalAmount > 0 && (
-            <SheetHeader>
-              <SheetTitle data-testid="cart-item-count">
-                In cart: <span className="font-bold">{items.length} items</span>
-              </SheetTitle>
-            </SheetHeader>
-          )}
+          <SheetHeader className={clsx(!totalAmount && 'sr-only')}>
+            <SheetTitle data-testid="cart-item-count">
+              {totalAmount > 0
+                ? <>In cart: <span className="font-bold">{items.length} items</span></>
+                : 'Shopping Cart'}
+            </SheetTitle>
+          </SheetHeader>
 
           {!totalAmount && (
-            <div data-testid="cart-empty" className="flex flex-col items-center justify-center w-72 mx-auto">
+            <div data-testid="cart-empty" className="flex flex-col items-center justify-center w-full max-w-[288px] mx-auto">
               <Image src="/assets/images/empty-box.png" alt="Empty cart" width={120} height={120} />
               <Title size="sm" text="Cart is empty" className="text-center font-bold my-2" />
               <p className="text-center text-neutral-500 mb-5">
                 Add at least one pizza to place an order
               </p>
 
-              <SheetClose>
+              <SheetClose asChild>
                 <Button className="w-56 h-12 text-base" size="lg">
                   <ArrowLeft className="w-5 mr-2" />
                   Go back

@@ -39,8 +39,8 @@ export const OrderItem: React.FC<Props> = ({
     <div className={cn('bg-white rounded-3xl select-none', className)}>
       <div
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex  cursor-pointer justify-between items-center p-7 border-b border-gray-100">
-        <div className="flex items-center gap-6">
+        className="flex cursor-pointer justify-between items-center p-4 sm:p-7 border-b border-gray-100">
+        <div className="flex items-center gap-3 sm:gap-6">
           <Title text={`Order #${id}`} size="md" className="font-extrabold" />
           <span className="text-gray-400">{createdAt}</span>
         </div>

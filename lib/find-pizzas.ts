@@ -64,6 +64,7 @@ export const findPizzas = async (params: GetSearchParams) => {
             },
           },
           include: {
+            ingredients: true,
             items: {
               where: {
                 price: {

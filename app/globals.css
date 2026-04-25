@@ -2,8 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 1rem = 10px — all rem values below are written relative to this base */
 html {
+  font-size: 62.5%;
   scroll-behavior: smooth;
+  overflow-x: clip;
+  scrollbar-width: none; /* Firefox */
+}
+
+* {
+  scrollbar-width: none; /* Firefox — catch nested scrollable elements */
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
@@ -14,33 +28,65 @@ html {
 
 @layer base {
   :root {
+    /* ── Colors ── */
     --foreground: 20 14.3% 4.1%;
-
     --card: 0 0% 100%;
     --card-foreground: 20 14.3% 4.1%;
-
     --popover: 0 0% 100%;
     --popover-foreground: 20 14.3% 4.1%;
-
     --primary: 22 100% 50%;
     --primary-foreground: 60 9.1% 97.8%;
-
     --secondary: 32 100% 98%;
     --secondary-foreground: 24 9.8% 10%;
-
     --muted: 60 4.8% 95.9%;
     --muted-foreground: 25 5.3% 44.7%;
-
     --accent: 60 4.8% 95.9%;
     --accent-foreground: 24 9.8% 10%;
-
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 60 9.1% 97.8%;
-
     --border: 20 5.9% 90%;
     --input: 0 0% 90%;
     --ring: 24.6 95% 53.1%;
-    --radius: 18px;
+
+    /* ── Border radius ── */
+    --radius: 1.8rem; /* 18px */
+
+    /* ── Spacing tokens ── */
+    --space-1:  0.4rem;  /*  4px */
+    --space-2:  0.8rem;  /*  8px */
+    --space-3:  1.2rem;  /* 12px */
+    --space-4:  1.6rem;  /* 16px */
+    --space-5:  2rem;    /* 20px */
+    --space-6:  2.4rem;  /* 24px */
+    --space-8:  3.2rem;  /* 32px */
+    --space-10: 4rem;    /* 40px */
+    --space-12: 4.8rem;  /* 48px */
+    --space-16: 6.4rem;  /* 64px */
+
+    /* ── Typography tokens ── */
+    --text-xs:   1.2rem; /* 12px */
+    --text-sm:   1.4rem; /* 14px */
+    --text-base: 1.6rem; /* 16px */
+    --text-lg:   1.8rem; /* 18px */
+    --text-xl:   2rem;   /* 20px */
+    --text-2xl:  2.4rem; /* 24px */
+    --text-3xl:  3rem;   /* 30px */
+    --text-4xl:  3.6rem; /* 36px */
+
+    /* ── Layout ── */
+    --container-max:     1140px;
+    --container-padding: 1.6rem; /* 16px */
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-size: var(--text-base);
+    overflow-x: clip;
+    max-width: 100vw;
   }
 }
 
@@ -48,47 +94,17 @@ html {
   font-family: var(--font-nunito), sans-serif;
 }
 
-.scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-
-.scrollbar::-webkit-scrollbar-track {
-  border-radius: 6px;
-  background: #fff;
-}
-
-.scrollbar::-webkit-scrollbar-thumb {
-  background: #dbdadd;
-  border-radius: 6px;
-}
-
-.scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #dbdadd;
-}
+/* ── Scrollbar ── */
+.scrollbar::-webkit-scrollbar       { width: 0.4rem; }
+.scrollbar::-webkit-scrollbar-track { border-radius: 0.6rem; background: #fff; }
+.scrollbar::-webkit-scrollbar-thumb { background: #dbdadd; border-radius: 0.6rem; }
+.scrollbar::-webkit-scrollbar-thumb:hover { background: #dbdadd; }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+  .text-balance { text-wrap: balance; }
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-}
-
-#nprogress .bar {
-  @apply bg-primary !important;
-}
-
-#nprogress .peg {
-  @apply shadow-md shadow-primary !important;
-}
-
-#nprogress .spinner-icon {
-  @apply border-t-primary border-l-primary !important;
-}
+/* ── NProgress ── */
+#nprogress .bar        { @apply bg-primary !important; }
+#nprogress .peg        { @apply shadow-md shadow-primary !important; }
+#nprogress .spinner-icon { @apply border-t-primary border-l-primary !important; }

@@ -1,11 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Container } from './container';
 import { cn } from '@/lib/utils';
 import ReactStories from 'react-insta-stories';
 import { Api } from '@/services/api-client';
-import { Story, StoryItem } from '@prisma/client';
 import { IStory } from '@/services/stories';
 import { X } from 'lucide-react';
 
@@ -37,26 +35,35 @@ export const Stories: React.FC<Props> = ({ className }) => {
 
   return (
     <>
-      <Container className={cn('flex items-center justify-between gap-2 my-10', className)}>
-        {stories.length === 0 &&
-          [...Array(6)].map((_, index) => (
-            <div key={index} className="w-[200px] h-[250px] bg-gray-200 rounded-md animate-pulse" />
+      <div className={cn('overflow-x-auto my-6 md:my-10', className)}>
+        <div className="flex items-center gap-4 px-4 sm:px-6 md:px-0 md:max-w-[1280px] md:mx-auto">
+          {stories.length === 0 &&
+            [...Array(6)].map((_, index) => (
+              <div key={index} className="w-[120px] h-[160px] sm:w-[160px] sm:h-[200px] md:w-[200px] md:h-[250px] bg-gray-200 rounded-md animate-pulse flex-shrink-0" />
+            ))}
+
+          {stories.map((story, i) => (
+            <button
+              key={story.id}
+              type="button"
+              aria-label={`Open story ${i + 1}`}
+              className="flex-shrink-0 rounded-md overflow-hidden"
+              onClick={() => onClickStory(story)}
+            >
+              <img
+                className="w-[120px] h-[160px] sm:w-[160px] sm:h-[200px] md:w-[200px] md:h-[250px] object-cover block"
+                src={story.previewImageUrl}
+                alt=""
+              />
+            </button>
           ))}
-        {stories.map((story) => (
-          <img
-            key={story.id}
-            onClick={() => onClickStory(story)}
-            className="rounded-md cursor-pointer"
-            height={250}
-            width={200}
-            src={story.previewImageUrl}
-          />
-        ))}
-      </Container>
+        </div>
+      </div>
+
       {open && (
         <div className="absolute left-0 top-0 w-full h-full bg-black/80 flex items-center justify-center z-20">
           <div className="relative" style={{ width: 520 }}>
-            <button className="absolute -right-10 -top-5 z-30" onClick={() => setOpen(false)}>
+            <button aria-label="Close stories" className="absolute -right-10 -top-5 z-30" onClick={() => setOpen(false)}>
               <X className="absolute top-0 right-0 w-8 h-8 text-white/50" />
             </button>
             <ReactStories

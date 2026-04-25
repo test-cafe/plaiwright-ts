@@ -48,7 +48,7 @@ describe('PATCH /api/cart/[id]', () => {
     const { cartItem } = await seedCartWithItem();
 
     const res = await PATCH(makeRequest('PATCH', cartItem.id, { quantity: 5 }), {
-      params: { id: String(cartItem.id) },
+      params: Promise.resolve({ id: String(cartItem.id) }),
     });
     const body = await res.json();
 
@@ -61,7 +61,7 @@ describe('PATCH /api/cart/[id]', () => {
     const { PATCH } = await import('@/app/api/cart/[id]/route');
 
     const res = await PATCH(makeRequest('PATCH', 99999, { quantity: 1 }), {
-      params: { id: '99999' },
+      params: Promise.resolve({ id: '99999' }),
     });
     const body = await res.json();
 
@@ -76,7 +76,7 @@ describe('PATCH /api/cart/[id]', () => {
       headers: { 'Content-Type': 'application/json' },
     });
 
-    const res = await PATCH(req, { params: { id: '1' } });
+    const res = await PATCH(req, { params: Promise.resolve({ id: '1' }) });
     const body = await res.json();
 
     expect(body.error).toBe('Cart token not found');
@@ -89,7 +89,7 @@ describe('DELETE /api/cart/[id]', () => {
     const { cartItem } = await seedCartWithItem();
 
     const res = await DELETE(makeRequest('DELETE', cartItem.id), {
-      params: { id: String(cartItem.id) },
+      params: Promise.resolve({ id: String(cartItem.id) }),
     });
     const body = await res.json();
 
@@ -101,7 +101,7 @@ describe('DELETE /api/cart/[id]', () => {
   it('returns error when cart item not found', async () => {
     const { DELETE } = await import('@/app/api/cart/[id]/route');
 
-    const res = await DELETE(makeRequest('DELETE', 99999), { params: { id: '99999' } });
+    const res = await DELETE(makeRequest('DELETE', 99999), { params: Promise.resolve({ id: '99999' }) });
     const body = await res.json();
 
     expect(body.error).toBe('Cart item not found');

@@ -24,7 +24,7 @@ export const PizzaSelector: React.FC<Props> = ({
   className,
 }) => {
   return (
-    <div className={cn('flex flex-col gap-3 mt-5 mb-8', className)}>
+    <div className={cn('flex flex-col gap-3 mt-5 mb-4 md:mb-8', className)}>
       <GroupVariants
         defaultValue="20"
         items={pizzaSizes}

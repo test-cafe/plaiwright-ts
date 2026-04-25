@@ -38,7 +38,7 @@ export const SortPopup: React.FC<Props> = ({ className }) => {
       <PopoverTrigger asChild>
         <div
           className={cn(
-            'inline-flex items-center gap-1 bg-gray-50 px-5 h-[52px] rounded-2xl cursor-pointer',
+            'inline-flex items-center gap-1 bg-gray-50 px-3 sm:px-5 h-10 sm:h-[52px] rounded-2xl cursor-pointer text-sm sm:text-base',
             className,
           )}>
           <ArrowUpDown className="w-4 h-4" />
@@ -47,7 +47,7 @@ export const SortPopup: React.FC<Props> = ({ className }) => {
         </div>
       </PopoverTrigger>
       <PopoverContent className="w-[240px]">
-        <ul>
+        <ul className="flex flex-col gap-1">
           {sortItems.map((item) => (
             <li key={item.value}>
               <button

@@ -58,7 +58,7 @@ export const CreateIngredientForm: React.FC<Props> = ({ values }) => {
       if (params.id) {
         await updateIngredient(+params.id, fields);
       } else {
-        await createIngredient(fields);
+        await createIngredient({ ...fields, imageUrl: fields.imageUrl ?? '' });
         router.push("/dashboard/ingredients");
       }
 

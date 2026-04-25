@@ -31,7 +31,7 @@ describe('GET /api/products/[id]', () => {
     });
 
     const req = new NextRequest(`http://localhost/api/products/${product.id}`);
-    const res = await getById(req, { params: { id: String(product.id) } });
+    const res = await getById(req, { params: Promise.resolve({ id: String(product.id) }) });
     const body = await res.json();
 
     expect(res.status).toBe(200);
@@ -43,7 +43,7 @@ describe('GET /api/products/[id]', () => {
 
   it('returns null for non-existent product id', async () => {
     const req = new NextRequest('http://localhost/api/products/99999');
-    const res = await getById(req, { params: { id: '99999' } });
+    const res = await getById(req, { params: Promise.resolve({ id: '99999' }) });
     const body = await res.json();
 
     expect(body).toBeNull();

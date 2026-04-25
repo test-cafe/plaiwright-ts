@@ -17,7 +17,7 @@ export const IngredientsList: React.FC<Props> = ({
   className,
 }) => {
   return (
-    <div className={cn('grid grid-cols-3 gap-3', className)}>
+    <div className={cn('grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3', className)}>
       {ingredients.map((item) => (
         <Ingredient
           onClick={() => onClickAdd(item.id)}

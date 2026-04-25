@@ -14,7 +14,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
 
   return (
     <>
-      <Container className="mt-5">
+      <Container className="mt-4 md:mt-10">
         <Title text="All Pizzas" size="lg" className="font-extrabold" />
       </Container>
 
@@ -22,13 +22,13 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
 
       <Stories />
 
-      <Container className="pb-14">
-        <div className="flex gap-[60px]">
-          <div className="w-[250px]">
+      <Container className="mt-4 md:mt-10 pb-14 px-4 sm:px-6">
+        <div className="flex gap-[80px]">
+          <div className="w-[250px] hidden lg:block">
             <Filters />
           </div>
           <div className="flex-1">
-            <div className="flex flex-col gap-16">
+            <div className="flex flex-col gap-8 md:gap-16">
               {categoryProducts.map(
                 (category) =>
                   category.products.length > 0 && (

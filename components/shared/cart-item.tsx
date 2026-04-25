@@ -23,14 +23,14 @@ export const CartItem: React.FC<Props> = ({
 }) => {
   return (
     <div className={cn('flex items-center justify-between', className)}>
-      <div className="flex items-center gap-5 flex-1">
+      <div className="flex items-center gap-3 sm:gap-5 flex-1">
         <CartItemDetails.Image src={imageUrl} />
         <CartItemDetails.Info name={name} />
       </div>
 
       <CartItemDetails.Price value={price} />
 
-      <div className="flex items-center gap-5 ml-20">
+      <div className="flex items-center gap-3 sm:gap-5 ml-3 sm:ml-10 md:ml-20">
         <CartItemDetails.CountButton onClick={onClickCountButton} value={quantity} />
         <button onClick={onClickRemove}>
           <X className="text-gray-400 cursor-pointer hover:text-gray-600" size={20} />

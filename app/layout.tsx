@@ -19,6 +19,7 @@ export default function RootLayout({
   return (
     <html className={nunito.variable} lang="en">
       <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link data-rh="true" rel="icon" href="/logo.png" />
       </head>
       <body>

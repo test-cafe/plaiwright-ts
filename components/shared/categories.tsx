@@ -12,14 +12,21 @@ interface Props {
 
 export const Categories: React.FC<Props> = ({ items, className }) => {
   const activeId = useCategoryStore((state) => state.activeId);
+  const itemRefs = React.useRef<Record<number, HTMLAnchorElement | null>>({});
+
+  React.useEffect(() => {
+    if (activeId == null) return;
+    itemRefs.current[activeId]?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }, [activeId]);
 
   return (
-    <div className={cn('inline-flex gap-1 bg-gray-50 p-1 rounded-2xl', className)}>
+    <div className={cn('flex gap-1 bg-gray-50 p-1 rounded-2xl overflow-x-auto max-w-full', className)}>
       {items.map((category) => (
         <a
           key={category.id}
+          ref={(el) => { itemRefs.current[category.id] = el; }}
           className={cn(
-            'flex items-center font-bold h-11 rounded-2xl px-5',
+            'flex items-center font-bold h-9 sm:h-11 rounded-2xl px-3 sm:px-5 text-sm sm:text-base shrink-0 transition-all duration-300 ease-in-out',
             activeId === category.id && 'bg-white shadow-md shadow-gray-200 text-primary',
           )}
           href={`/#${category.name}`}>

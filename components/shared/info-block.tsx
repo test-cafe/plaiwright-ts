@@ -14,9 +14,9 @@ interface Props {
 
 export const InfoBlock: React.FC<Props> = ({ className, title, text, imageUrl }) => {
   return (
-    <div className={cn(className, 'flex items-center justify-between w-[840px] gap-12')}>
+    <div className={cn(className, 'flex flex-col md:flex-row items-center justify-between w-full max-w-[840px] gap-6 md:gap-12')}>
       <div className="flex flex-col">
-        <div className="w-[445px]">
+        <div className="w-full md:w-[445px]">
           <Title size="lg" text={title} className="font-extrabold" />
           <p className="text-gray-400 text-lg">{text}</p>
         </div>

@@ -10,9 +10,10 @@ import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 interface Props {
   onClickOpenModal?: VoidFunction;
   className?: string;
+  mobile?: boolean;
 }
 
-export const ProfileButton: React.FC<Props> = ({ className, onClickOpenModal }) => {
+export const ProfileButton: React.FC<Props> = ({ className, onClickOpenModal, mobile }) => {
   const { data: session } = useSession();
 
   return (
@@ -20,7 +21,10 @@ export const ProfileButton: React.FC<Props> = ({ className, onClickOpenModal }) 
       {session ? (
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="secondary" className="flex items-center gap-2">
+            <Button
+              variant={mobile ? 'ghost' : 'secondary'}
+              aria-label="Open profile menu"
+              className="flex items-center gap-2">
               <CircleUser size={18} />
               {session.user?.name?.split(' ')[0] ?? 'Profile'}
             </Button>
@@ -48,7 +52,7 @@ export const ProfileButton: React.FC<Props> = ({ className, onClickOpenModal }) 
           </PopoverContent>
         </Popover>
       ) : (
-        <Button onClick={onClickOpenModal} variant="outline" data-testid="sign-in-button">
+        <Button onClick={onClickOpenModal} variant={mobile ? 'ghost' : 'outline'} data-testid="sign-in-button">
           Sign in
         </Button>
       )}

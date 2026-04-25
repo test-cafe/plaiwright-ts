@@ -23,7 +23,7 @@ export default async function OrdersPage() {
     <Container className="my-5">
       <Title text="My Orders" size="xl" className="font-extrabold mb-8" />
 
-      <div className="flex flex-col gap-10 flex-1 mb-20 w-[70%]">
+      <div className="flex flex-col gap-6 md:gap-10 flex-1 mb-20 w-full max-w-3xl">
         {orders.map((order) => (
           <OrderItem
             key={order.id}
