@@ -28,6 +28,7 @@ jobs:
           --health-retries 5
 
     env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       DATABASE_URL: postgresql://postgres:password@localhost:5432/next_pizza_test?schema=public
       NEXT_PUBLIC_API_URL: /api
       NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
@@ -94,6 +95,7 @@ jobs:
           --health-retries 5
 
     env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       DATABASE_URL: postgresql://postgres:password@localhost:5432/next_pizza_test?schema=public
       NEXT_PUBLIC_API_URL: /api
       NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
