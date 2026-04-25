@@ -66,7 +66,7 @@ export async function createOrder(data: TFormOrderData) {
       throw new Error('Please sign in to place an order');
     }
     const userId = Number(currentUser.id);
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const cartToken = cookieStore.get('cartToken')?.value;
 
     const userCart = await prisma.cart.findFirst({
