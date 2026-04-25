@@ -13,7 +13,7 @@ export class AuthModalPage {
     this.page = page;
     this.dialog = page.locator('[role="dialog"]:not([data-nextjs-dialog])');
     this.emailInput = page.getByPlaceholder('user@test.ru').or(page.getByPlaceholder('E-Mail'));
-    this.passwordInput = page.getByLabel(/password/i).first();
+    this.passwordInput = page.getByPlaceholder('Password').first();
     this.loginButton = page.getByRole('button', { name: /^sign in$/i });
     this.registerButton = page.getByRole('button', { name: /^register$/i }).first();
     this.switchButton = page.getByTestId('auth-switch-button');
@@ -25,7 +25,7 @@ export class AuthModalPage {
 
   async fillLoginForm(email: string, password: string) {
     await this.page.getByPlaceholder('user@test.ru').fill(email);
-    await this.page.getByLabel(/password/i).first().fill(password);
+    await this.page.getByPlaceholder('Password').first().fill(password);
   }
 
   async fillRegisterForm(opts: { fullName: string; email: string; password: string; confirmPassword: string }) {

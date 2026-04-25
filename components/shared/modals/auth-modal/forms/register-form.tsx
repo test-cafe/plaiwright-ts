@@ -48,10 +48,10 @@ export const RegisterForm: React.FC<Props> = ({ onClose, onClickLogin }) => {
   return (
     <FormProvider {...form}>
       <form className="flex flex-col gap-5" onSubmit={form.handleSubmit(onSubmit)}>
-        <FormInput name="email" label="E-Mail" required />
-        <FormInput name="fullName" label="Full name" required />
-        <FormInput name="password" label="Password" type="password" required />
-        <FormInput name="confirmPassword" label="Confirm password" type="password" required />
+        <FormInput name="email" label="E-Mail" placeholder="E-Mail" required />
+        <FormInput name="fullName" label="Full name" placeholder="Full name" required />
+        <FormInput name="password" label="Password" type="password" placeholder="Password" required />
+        <FormInput name="confirmPassword" label="Confirm password" type="password" placeholder="Confirm password" required />
 
         <Button disabled={form.formState.isSubmitting} className="h-12 text-base" type="submit">
           Register

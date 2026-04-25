@@ -23,7 +23,7 @@ test.describe('Auth flow', () => {
     await auth.waitForOpen();
 
     await expect(page.getByPlaceholder('user@test.ru')).toBeVisible();
-    await expect(page.getByLabel(/password/i).first()).toBeVisible();
+    await expect(page.getByPlaceholder('Password').first()).toBeVisible();
   });
 
   test('switching to register shows register form', async ({ page }) => {

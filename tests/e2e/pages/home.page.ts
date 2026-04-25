@@ -10,7 +10,7 @@ export class HomePage {
   constructor(page: Page) {
     this.page = page;
     this.searchInput = page.getByTestId('search-input');
-    this.cartButton = page.getByTestId('cart-button');
+    this.cartButton = page.locator('header').getByTestId('cart-button').first();
     this.searchResults = page.getByTestId('search-results').locator('a');
     this.filterTitle = page.getByTestId('filters').getByText('Filters', { exact: true });
   }

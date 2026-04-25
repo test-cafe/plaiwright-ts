@@ -57,8 +57,8 @@ export const LoginForm: React.FC<Props> = ({ onClose }) => {
           <img src="/assets/images/phone-icon.png" alt="phone-icon" width={60} height={60} />
         </div>
 
-        <FormInput name="email" label="E-Mail" required />
-        <FormInput type="password" name="password" label="Password" required />
+        <FormInput name="email" label="E-Mail" placeholder="user@test.ru" required />
+        <FormInput type="password" name="password" label="Password" placeholder="Password" required />
 
         <Button disabled={form.formState.isSubmitting} className="h-12 text-base" type="submit">
           {form.formState.isSubmitting ? 'Signing in...' : 'Sign in'}

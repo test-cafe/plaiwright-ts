@@ -14,7 +14,7 @@ test.describe('Cart flow', () => {
     const modal = new PizzaModalPage(page);
     await home.goto();
 
-    const firstCard = page.locator('a[href^="/product/"]').first();
+    const firstCard = page.getByTestId('product-card').first();
     await firstCard.click();
 
     await modal.waitForOpen();
@@ -28,7 +28,7 @@ test.describe('Cart flow', () => {
     const modal = new PizzaModalPage(page);
     await home.goto();
 
-    const firstCard = page.locator('a[href^="/product/"]').first();
+    const firstCard = page.getByTestId('product-card').first();
     await firstCard.click();
     await modal.waitForOpen();
 
@@ -54,7 +54,7 @@ test.describe('Cart flow', () => {
     const modal = new PizzaModalPage(page);
     await home.goto();
 
-    const firstCard = page.locator('a[href^="/product/"]').first();
+    const firstCard = page.getByTestId('product-card').first();
     await firstCard.click();
     await modal.waitForOpen();
 
@@ -74,7 +74,7 @@ test.describe('Cart flow', () => {
     await home.goto();
 
     // Add item
-    const firstCard = page.locator('a[href^="/product/"]').first();
+    const firstCard = page.getByTestId('product-card').first();
     await firstCard.click();
     await modal.waitForOpen();
     await modal.clickAddToCart();
@@ -106,7 +106,7 @@ test.describe('Cart flow', () => {
     await home.goto();
 
     // Add item first so checkout button appears
-    const firstCard = page.locator('a[href^="/product/"]').first();
+    const firstCard = page.getByTestId('product-card').first();
     await firstCard.click();
     await modal.waitForOpen();
     await modal.clickAddToCart();
@@ -127,7 +127,7 @@ test.describe('Cart flow', () => {
     const drawer = new CartDrawerPage(page);
     await home.goto();
 
-    const firstCard = page.locator('a[href^="/product/"]').first();
+    const firstCard = page.getByTestId('product-card').first();
     await firstCard.click();
     await modal.waitForOpen();
     await modal.clickAddToCart();
