@@ -9,18 +9,18 @@ export class CartDrawerPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.drawer = page.locator('[data-radix-scroll-area-viewport], [class*="SheetContent"]').first();
-    this.checkoutButton = page.getByRole('link', { name: /checkout/i });
-    this.emptyMessage = page.getByText('Cart is empty');
+    this.drawer = page.getByTestId('cart-drawer');
+    this.checkoutButton = page.getByTestId('checkout-button');
+    this.emptyMessage = page.getByTestId('cart-empty');
     this.totalAmount = page.locator('text=/\\$\\d+/').last();
   }
 
   async waitForOpen() {
-    await this.page.waitForSelector('[class*="SheetContent"], [data-state="open"]', { timeout: 5000 });
+    await this.drawer.waitFor({ state: 'visible' });
   }
 
   async getItemCount(): Promise<number> {
-    const heading = await this.page.getByText(/In cart:/i).textContent();
+    const heading = await this.page.getByTestId('cart-item-count').textContent();
     const match = heading?.match(/(\d+) items?/);
     return match ? parseInt(match[1]) : 0;
   }

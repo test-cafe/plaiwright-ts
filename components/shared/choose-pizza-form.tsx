@@ -87,6 +87,7 @@ export const ChoosePizzaForm: React.FC<Props> = ({
         <Button
           loading={loading}
           onClick={handleClickAdd}
+          data-testid="add-to-cart-button"
           className="h-[55px] px-10 text-base rounded-[18px] w-full">
           Add to cart for ${totalPrice}
         </Button>

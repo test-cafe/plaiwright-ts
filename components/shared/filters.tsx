@@ -63,7 +63,7 @@ export const Filters: React.FC<Props> = ({ className }) => {
     .map((o) => ({ text: o.name, value: o.id.toString() }));
 
   return (
-    <div className={className}>
+    <div data-testid="filters" className={className}>
       <Title
         text="Filters"
         size="sm"

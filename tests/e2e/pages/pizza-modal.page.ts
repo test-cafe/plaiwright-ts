@@ -7,8 +7,8 @@ export class PizzaModalPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.dialog = page.locator('[role="dialog"]');
-    this.addToCartButton = page.getByRole('button', { name: /add to cart/i });
+    this.dialog = page.locator('[role="dialog"]:not([data-nextjs-dialog])');
+    this.addToCartButton = page.getByTestId('add-to-cart-button');
   }
 
   async waitForOpen() {

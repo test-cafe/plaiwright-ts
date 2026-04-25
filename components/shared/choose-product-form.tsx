@@ -28,7 +28,7 @@ export const ChooseProductForm: React.FC<Props> = ({
   const productItem = items?.[0];
 
   if (!productItem) {
-    throw new Error('Product not found');
+    return null;
   }
 
   const productPrice = productItem.price;
@@ -64,6 +64,7 @@ export const ChooseProductForm: React.FC<Props> = ({
         <Button
           loading={loading}
           onClick={handleClickAdd}
+          data-testid="add-to-cart-button"
           className="h-[55px] px-10 text-base rounded-[18px] w-full mt-5">
           Add to cart for ${productPrice}
         </Button>

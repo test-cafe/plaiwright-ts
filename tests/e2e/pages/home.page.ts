@@ -9,15 +9,16 @@ export class HomePage {
 
   constructor(page: Page) {
     this.page = page;
-    this.searchInput = page.getByPlaceholder('Search for pizza...');
-    this.cartButton = page.locator('header button').filter({ hasText: /\$/ });
-    this.searchResults = page.locator('.shadow-md a');
-    this.filterTitle = page.getByText('Filters', { exact: true });
+    this.searchInput = page.getByTestId('search-input');
+    this.cartButton = page.getByTestId('cart-button');
+    this.searchResults = page.getByTestId('search-results').locator('a');
+    this.filterTitle = page.getByTestId('filters').getByText('Filters', { exact: true });
   }
 
   async goto() {
     await this.page.goto('/');
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState('domcontentloaded');
+    await this.page.waitForSelector('header', { state: 'visible' });
   }
 
   async search(query: string) {
@@ -31,7 +32,7 @@ export class HomePage {
   }
 
   async clickProductCard(name: string) {
-    await this.page.getByText(name, { exact: true }).first().click();
+    await this.page.getByTestId('product-card').filter({ hasText: name }).first().click();
   }
 
   async checkPizzaTypeFilter(label: string) {
@@ -40,7 +41,7 @@ export class HomePage {
   }
 
   async getProductCardCount() {
-    return this.page.locator('[class*="product-card"], .rounded-md.overflow-hidden').count();
+    return this.page.getByTestId('product-card').count();
   }
 
   async openCartDrawer() {
@@ -48,6 +49,6 @@ export class HomePage {
   }
 
   async clickSignIn() {
-    await this.page.getByRole('button', { name: /sign in/i }).click();
+    await this.page.getByTestId('sign-in-button').click();
   }
 }

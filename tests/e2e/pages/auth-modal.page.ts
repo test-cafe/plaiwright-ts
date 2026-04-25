@@ -11,12 +11,12 @@ export class AuthModalPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.dialog = page.locator('[role="dialog"]');
+    this.dialog = page.locator('[role="dialog"]:not([data-nextjs-dialog])');
     this.emailInput = page.getByPlaceholder('user@test.ru').or(page.getByPlaceholder('E-Mail'));
     this.passwordInput = page.getByLabel(/password/i).first();
     this.loginButton = page.getByRole('button', { name: /^sign in$/i });
     this.registerButton = page.getByRole('button', { name: /^register$/i }).first();
-    this.switchButton = page.getByRole('button', { name: /^register$|^sign in$/i }).last();
+    this.switchButton = page.getByTestId('auth-switch-button');
   }
 
   async waitForOpen() {
@@ -36,18 +36,18 @@ export class AuthModalPage {
   }
 
   async switchToRegister() {
-    await this.page.getByRole('button', { name: 'Register' }).click();
+    await this.switchButton.click();
   }
 
   async switchToLogin() {
-    await this.page.getByRole('button', { name: 'Sign in' }).last().click();
+    await this.switchButton.click();
   }
 
   async submitLogin() {
-    await this.page.getByRole('button', { name: /sign in/i }).first().click();
+    await this.page.getByRole('button', { name: /^sign in$/i }).first().click();
   }
 
   async submitRegister() {
-    await this.page.getByRole('button', { name: /register/i }).first().click();
+    await this.page.getByRole('button', { name: /^register$/i }).first().click();
   }
 }

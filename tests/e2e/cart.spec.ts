@@ -14,8 +14,8 @@ test.describe('Cart flow', () => {
     const modal = new PizzaModalPage(page);
     await home.goto();
 
-    const firstCard = page.locator('.rounded-md').filter({ has: page.getByRole('button', { name: /choose/i }) }).first();
-    await firstCard.getByRole('button', { name: /choose/i }).click();
+    const firstCard = page.locator('a[href^="/product/"]').first();
+    await firstCard.click();
 
     await modal.waitForOpen();
 
@@ -28,8 +28,8 @@ test.describe('Cart flow', () => {
     const modal = new PizzaModalPage(page);
     await home.goto();
 
-    const firstCard = page.locator('.rounded-md').filter({ has: page.getByRole('button', { name: /choose/i }) }).first();
-    await firstCard.getByRole('button', { name: /choose/i }).click();
+    const firstCard = page.locator('a[href^="/product/"]').first();
+    await firstCard.click();
     await modal.waitForOpen();
 
     const priceBefore = await modal.getPrice();
@@ -54,8 +54,8 @@ test.describe('Cart flow', () => {
     const modal = new PizzaModalPage(page);
     await home.goto();
 
-    const firstCard = page.locator('.rounded-md').filter({ has: page.getByRole('button', { name: /choose/i }) }).first();
-    await firstCard.getByRole('button', { name: /choose/i }).click();
+    const firstCard = page.locator('a[href^="/product/"]').first();
+    await firstCard.click();
     await modal.waitForOpen();
 
     await modal.clickAddToCart();
@@ -74,8 +74,8 @@ test.describe('Cart flow', () => {
     await home.goto();
 
     // Add item
-    const firstCard = page.locator('.rounded-md').filter({ has: page.getByRole('button', { name: /choose/i }) }).first();
-    await firstCard.getByRole('button', { name: /choose/i }).click();
+    const firstCard = page.locator('a[href^="/product/"]').first();
+    await firstCard.click();
     await modal.waitForOpen();
     await modal.clickAddToCart();
     await page.waitForTimeout(1000);
@@ -106,8 +106,8 @@ test.describe('Cart flow', () => {
     await home.goto();
 
     // Add item first so checkout button appears
-    const firstCard = page.locator('.rounded-md').filter({ has: page.getByRole('button', { name: /choose/i }) }).first();
-    await firstCard.getByRole('button', { name: /choose/i }).click();
+    const firstCard = page.locator('a[href^="/product/"]').first();
+    await firstCard.click();
     await modal.waitForOpen();
     await modal.clickAddToCart();
     await page.waitForTimeout(1000);
@@ -127,8 +127,8 @@ test.describe('Cart flow', () => {
     const drawer = new CartDrawerPage(page);
     await home.goto();
 
-    const firstCard = page.locator('.rounded-md').filter({ has: page.getByRole('button', { name: /choose/i }) }).first();
-    await firstCard.getByRole('button', { name: /choose/i }).click();
+    const firstCard = page.locator('a[href^="/product/"]').first();
+    await firstCard.click();
     await modal.waitForOpen();
     await modal.clickAddToCart();
     await page.waitForTimeout(1000);

@@ -48,7 +48,7 @@ export const ProfileButton: React.FC<Props> = ({ className, onClickOpenModal }) 
           </PopoverContent>
         </Popover>
       ) : (
-        <Button onClick={onClickOpenModal} variant="outline">
+        <Button onClick={onClickOpenModal} variant="outline" data-testid="sign-in-button">
           Sign in
         </Button>
       )}

@@ -8,7 +8,7 @@ test.describe('Auth flow', () => {
     const auth = new AuthModalPage(page);
     await home.goto();
 
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await home.clickSignIn();
 
     await auth.waitForOpen();
     await expect(auth.dialog).toBeVisible();
@@ -19,7 +19,7 @@ test.describe('Auth flow', () => {
     const auth = new AuthModalPage(page);
     await home.goto();
 
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await home.clickSignIn();
     await auth.waitForOpen();
 
     await expect(page.getByPlaceholder('user@test.ru')).toBeVisible();
@@ -31,7 +31,7 @@ test.describe('Auth flow', () => {
     const auth = new AuthModalPage(page);
     await home.goto();
 
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await home.clickSignIn();
     await auth.waitForOpen();
     await auth.switchToRegister();
 
@@ -44,7 +44,7 @@ test.describe('Auth flow', () => {
     const auth = new AuthModalPage(page);
     await home.goto();
 
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await home.clickSignIn();
     await auth.waitForOpen();
     await auth.switchToRegister();
     await auth.switchToLogin();
@@ -58,7 +58,7 @@ test.describe('Auth flow', () => {
     const auth = new AuthModalPage(page);
     await home.goto();
 
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await home.clickSignIn();
     await auth.waitForOpen();
 
     await auth.fillLoginForm('wrong@example.com', 'wrongpassword');
@@ -75,7 +75,7 @@ test.describe('Auth flow', () => {
     const auth = new AuthModalPage(page);
     await home.goto();
 
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await home.clickSignIn();
     await auth.waitForOpen();
     await auth.switchToRegister();
 
@@ -90,7 +90,7 @@ test.describe('Auth flow', () => {
     const auth = new AuthModalPage(page);
     await home.goto();
 
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await home.clickSignIn();
     await auth.waitForOpen();
     await auth.switchToRegister();
 
@@ -111,7 +111,7 @@ test.describe('Auth flow', () => {
     const auth = new AuthModalPage(page);
     await home.goto();
 
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await home.clickSignIn();
     await auth.waitForOpen();
 
     await page.keyboard.press('Escape');
