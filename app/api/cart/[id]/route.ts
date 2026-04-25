@@ -29,10 +29,12 @@ async function updateCartTotalAmount(userId: number | undefined, cartToken: stri
     },
   });
 
-  const totalAmount = userCart?.items.reduce((acc, item) => acc + calcCartItemTotalAmount(item), 0);
+  if (!userCart) return null;
+
+  const totalAmount = userCart.items.reduce((acc, item) => acc + calcCartItemTotalAmount(item), 0);
 
   return await prisma.cart.update({
-    where: { id: userCart?.id },
+    where: { id: userCart.id },
     data: { totalAmount },
     include: {
       items: {
@@ -46,8 +48,9 @@ async function updateCartTotalAmount(userId: number | undefined, cartToken: stri
   });
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const cartToken = req.cookies.get('cartToken')?.value;
     const currentUser = await getUserSession();
     const userId = await resolveUserId(currentUser?.id);
@@ -57,7 +60,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
 
     const cartItem = await prisma.cartItem.findFirst({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
     });
 
     if (!cartItem) {
@@ -80,8 +83,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const cartToken = req.cookies.get('cartToken')?.value;
     const currentUser = await getUserSession();
     const userId = await resolveUserId(currentUser?.id);
@@ -91,7 +95,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     }
 
     const cartItem = await prisma.cartItem.findFirst({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
     });
 
     if (!cartItem) {

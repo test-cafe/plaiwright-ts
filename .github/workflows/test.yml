@@ -62,7 +62,7 @@ jobs:
         run: npx prisma migrate deploy
 
       - name: Run unit & integration tests
-        run: npx vitest run
+        run: npx vitest run --coverage
 
       - name: Upload coverage report
         if: always()
