@@ -3,9 +3,25 @@ import { HomePage } from './pages/home.page';
 import { PizzaModalPage } from './pages/pizza-modal.page';
 import { CartDrawerPage } from './pages/cart-drawer.page';
 
+async function addFirstPizzaToCart(page: import('@playwright/test').Page) {
+  const home = new HomePage(page);
+  const modal = new PizzaModalPage(page);
+  await home.goto();
+
+  const firstCard = page.getByTestId('product-card').first();
+  await firstCard.click();
+  await modal.waitForOpen();
+  await modal.clickAddToCart();
+
+  // Wait for modal to close (router.back navigates away from /product/[id])
+  await modal.dialog.waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
+  // Explicitly navigate home to ensure clean state
+  await page.goto('/');
+  await page.waitForSelector('[data-testid="cart-button"]', { state: 'visible' });
+}
+
 test.describe('Cart flow', () => {
   test.beforeEach(async ({ page }) => {
-    // Clear cart cookie before each test
     await page.context().clearCookies();
   });
 
@@ -34,7 +50,6 @@ test.describe('Cart flow', () => {
 
     const priceBefore = await modal.getPrice();
 
-    // Try to click a different size
     const sizes = modal.dialog.getByText(/\d+ cm/);
     const sizeCount = await sizes.count();
 
@@ -42,7 +57,6 @@ test.describe('Cart flow', () => {
       await sizes.nth(1).click();
       await page.waitForTimeout(200);
       const priceAfter = await modal.getPrice();
-      // Price should change (may be same or different depending on data)
       expect(priceAfter).toBeGreaterThanOrEqual(0);
     }
 
@@ -51,17 +65,8 @@ test.describe('Cart flow', () => {
 
   test('adding pizza to cart updates cart button count', async ({ page }) => {
     const home = new HomePage(page);
-    const modal = new PizzaModalPage(page);
-    await home.goto();
+    await addFirstPizzaToCart(page);
 
-    const firstCard = page.getByTestId('product-card').first();
-    await firstCard.click();
-    await modal.waitForOpen();
-
-    await modal.clickAddToCart();
-    await page.waitForTimeout(1000);
-
-    // Cart button should now show $amount > $0
     const cartBtn = home.cartButton;
     const cartText = await cartBtn.textContent();
     expect(cartText).toMatch(/\$[1-9]/);
@@ -69,18 +74,10 @@ test.describe('Cart flow', () => {
 
   test('cart drawer shows added item', async ({ page }) => {
     const home = new HomePage(page);
-    const modal = new PizzaModalPage(page);
     const drawer = new CartDrawerPage(page);
-    await home.goto();
 
-    // Add item
-    const firstCard = page.getByTestId('product-card').first();
-    await firstCard.click();
-    await modal.waitForOpen();
-    await modal.clickAddToCart();
-    await page.waitForTimeout(1000);
+    await addFirstPizzaToCart(page);
 
-    // Open drawer
     await home.openCartDrawer();
     await drawer.waitForOpen();
 
@@ -101,16 +98,9 @@ test.describe('Cart flow', () => {
 
   test('checkout button in drawer navigates to /cart', async ({ page }) => {
     const home = new HomePage(page);
-    const modal = new PizzaModalPage(page);
     const drawer = new CartDrawerPage(page);
-    await home.goto();
 
-    // Add item first so checkout button appears
-    const firstCard = page.getByTestId('product-card').first();
-    await firstCard.click();
-    await modal.waitForOpen();
-    await modal.clickAddToCart();
-    await page.waitForTimeout(1000);
+    await addFirstPizzaToCart(page);
 
     await home.openCartDrawer();
     await drawer.waitForOpen();
@@ -123,15 +113,9 @@ test.describe('Cart flow', () => {
 
   test('cart page shows items and order form', async ({ page }) => {
     const home = new HomePage(page);
-    const modal = new PizzaModalPage(page);
     const drawer = new CartDrawerPage(page);
-    await home.goto();
 
-    const firstCard = page.getByTestId('product-card').first();
-    await firstCard.click();
-    await modal.waitForOpen();
-    await modal.clickAddToCart();
-    await page.waitForTimeout(1000);
+    await addFirstPizzaToCart(page);
 
     await home.openCartDrawer();
     await drawer.waitForOpen();
