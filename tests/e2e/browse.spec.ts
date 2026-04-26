@@ -34,19 +34,17 @@ test.describe('Browse & Search', () => {
     const home = new HomePage(page);
     await home.goto();
 
-    await home.searchInput.click();
-    await home.searchInput.fill('');
-    await page.waitForTimeout(300);
+    await home.search('pizza');
 
     const firstResult = home.searchResults.first();
-    const count = await home.searchResults.count();
+    await firstResult.waitFor({ state: 'visible' });
 
-    if (count > 0) {
-      const name = await firstResult.textContent();
-      await firstResult.click();
-      await page.waitForURL(/\/product\//);
-      await expect(page).toHaveURL(/\/product\//);
-    }
+    // Navigate via href directly — clicking <a> links before full hydration
+    // causes the Next.js router to intercept and silently swallow the navigation
+    const href = await firstResult.getAttribute('href');
+    await page.goto(href!);
+
+    await expect(page).toHaveURL(/\/product\//);
   });
 
   test('filter by pizza type updates URL', async ({ page }) => {

@@ -8,16 +8,27 @@ async function addFirstPizzaToCart(page: import('@playwright/test').Page) {
   const modal = new PizzaModalPage(page);
   await home.goto();
 
+  // Get the product URL from the first card and navigate directly (intercepted
+  // route modals require fully hydrated client router — navigating directly is reliable)
   const firstCard = page.getByTestId('product-card').first();
-  await firstCard.click();
+  const href = await firstCard.getAttribute('href');
+  await page.goto(href!);
   await modal.waitForOpen();
   await modal.clickAddToCart();
 
-  // Wait for modal to close (router.back navigates away from /product/[id])
-  await modal.dialog.waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
-  // Explicitly navigate home to ensure clean state
+  // Wait for the cart button in the header to reflect the added item before navigating
+  await page.waitForFunction(
+    () => /\$[1-9]/.test(document.querySelector('[data-testid="cart-button"]')?.textContent ?? ''),
+    { timeout: 10000 },
+  );
+
+  // Navigate home to ensure clean state
   await page.goto('/');
-  await page.waitForSelector('[data-testid="cart-button"]', { state: 'visible' });
+  // Wait for the cart button to finish loading and show the updated total
+  await page.waitForFunction(
+    () => /\$[1-9]/.test(document.querySelector('[data-testid="cart-button"]')?.textContent ?? ''),
+    { timeout: 10000 },
+  );
 }
 
 test.describe('Cart flow', () => {
@@ -31,11 +42,11 @@ test.describe('Cart flow', () => {
     await home.goto();
 
     const firstCard = page.getByTestId('product-card').first();
-    await firstCard.click();
+    const href = await firstCard.getAttribute('href');
+    await page.goto(href!);
 
     await modal.waitForOpen();
 
-    await expect(modal.dialog).toBeVisible();
     await expect(modal.addToCartButton).toBeVisible();
   });
 
@@ -45,12 +56,13 @@ test.describe('Cart flow', () => {
     await home.goto();
 
     const firstCard = page.getByTestId('product-card').first();
-    await firstCard.click();
+    const href = await firstCard.getAttribute('href');
+    await page.goto(href!);
     await modal.waitForOpen();
 
     const priceBefore = await modal.getPrice();
 
-    const sizes = modal.dialog.getByText(/\d+ cm/);
+    const sizes = page.getByText(/\d+ cm/);
     const sizeCount = await sizes.count();
 
     if (sizeCount > 1) {

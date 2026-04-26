@@ -27,7 +27,7 @@ export const AuthModal: React.FC<Props> = ({ open, onClose }) => {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="w-full max-w-sm bg-white p-6 sm:p-10">
+      <DialogContent className="w-full max-w-lg bg-white p-6 sm:p-10">
         <VisuallyHidden.Root>
           <DialogTitle>{type === 'login' ? 'Sign in' : 'Register'}</DialogTitle>
         </VisuallyHidden.Root>

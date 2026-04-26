@@ -17,8 +17,10 @@ export class HomePage {
 
   async goto() {
     await this.page.goto('/');
-    await this.page.waitForLoadState('domcontentloaded');
+    await this.page.waitForLoadState('load');
     await this.page.waitForSelector('header', { state: 'visible' });
+    // Wait for product cards to confirm React has hydrated (intercepted routes need client-side router)
+    await this.page.waitForSelector('[data-testid="product-card"]', { state: 'visible', timeout: 15000 });
   }
 
   async search(query: string) {
@@ -49,6 +51,6 @@ export class HomePage {
   }
 
   async clickSignIn() {
-    await this.page.getByTestId('sign-in-button').click();
+    await this.page.getByTestId('sign-in-button').first().click();
   }
 }

@@ -11,9 +11,10 @@ interface Props {
   onClickOpenModal?: VoidFunction;
   className?: string;
   mobile?: boolean;
+  testId?: string;
 }
 
-export const ProfileButton: React.FC<Props> = ({ className, onClickOpenModal, mobile }) => {
+export const ProfileButton: React.FC<Props> = ({ className, onClickOpenModal, mobile, testId }) => {
   const { data: session } = useSession();
 
   return (
@@ -52,7 +53,13 @@ export const ProfileButton: React.FC<Props> = ({ className, onClickOpenModal, mo
           </PopoverContent>
         </Popover>
       ) : (
-        <Button onClick={onClickOpenModal} variant={mobile ? 'ghost' : 'outline'} data-testid="sign-in-button">
+        <Button
+          onClick={onClickOpenModal}
+          variant={mobile ? 'ghost' : 'outline'}
+          {...(testId && { 'data-testid': testId })}
+          className="flex items-center gap-2"
+        >
+          <CircleUser size={18} />
           Sign in
         </Button>
       )}

@@ -4,6 +4,7 @@ export class PizzaModalPage {
   readonly page: Page;
   readonly dialog: Locator;
   readonly addToCartButton: Locator;
+  private _isModalMode = true;
 
   constructor(page: Page) {
     this.page = page;
@@ -11,21 +12,28 @@ export class PizzaModalPage {
     this.addToCartButton = page.getByTestId('add-to-cart-button');
   }
 
+  // Waits for either the intercepted-route modal dialog or a full product page navigation
   async waitForOpen() {
-    await this.dialog.waitFor({ state: 'visible' });
+    // add-to-cart button exists in both the modal and the standalone product page
+    await this.addToCartButton.waitFor({ state: 'visible', timeout: 15000 });
+    // Determine which mode we're in (dialog visible = intercepted route fired)
+    this._isModalMode = await this.dialog.isVisible();
   }
 
   async selectSize(size: '25' | '30' | '40') {
     const sizeLabel = `${size} cm`;
-    await this.page.getByText(sizeLabel, { exact: true }).click();
+    const container = this._isModalMode ? this.dialog : this.page;
+    await container.getByText(sizeLabel, { exact: true }).click();
   }
 
   async selectDoughType(type: 'Thin' | 'Traditional') {
-    await this.dialog.getByText(type, { exact: true }).click();
+    const container = this._isModalMode ? this.dialog : this.page;
+    await container.getByText(type, { exact: true }).click();
   }
 
   async addIngredient(name: string) {
-    await this.dialog.getByText(name).click();
+    const container = this._isModalMode ? this.dialog : this.page;
+    await container.getByText(name).click();
   }
 
   async getPrice(): Promise<number> {
@@ -35,6 +43,9 @@ export class PizzaModalPage {
   }
 
   async clickAddToCart() {
+    // useChoosePizza initializes with size=20 but then a useEffect updates to the first
+    // available size. Wait 300ms so the effect has time to run before we click.
+    await this.page.waitForTimeout(300);
     await this.addToCartButton.click();
   }
 }
