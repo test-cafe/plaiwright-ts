@@ -48,12 +48,15 @@ export default function CartPage() {
 
   React.useEffect(() => {
     async function fetchUserInfo() {
-      const data = await Api.auth.getMe();
-      const [firstName, lastName] = data.fullName.split(" ");
-
-      form.setValue("firstName", firstName);
-      form.setValue("lastName", lastName);
-      form.setValue("email", data.email);
+      try {
+        const data = await Api.auth.getMe();
+        const [firstName, lastName] = (data.fullName ?? '').split(' ');
+        form.setValue('firstName', firstName ?? '');
+        form.setValue('lastName', lastName ?? '');
+        form.setValue('email', data.email ?? '');
+      } catch {
+        // user info not available, form stays empty
+      }
     }
 
     if (session) {
