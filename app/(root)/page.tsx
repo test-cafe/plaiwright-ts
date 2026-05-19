@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { Container } from '@/components/shared/container';
 import { Filters } from '@/components/shared/filters';
 
@@ -43,8 +44,10 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
             </div>
 
             <div className="flex items-center gap-6 mt-12">
-              <Pagination pageCount={meta.pageCount} currentPage={meta.currentPage} />
-              <span className="text-sm text-gray-400">5 из 65</span>
+              <Suspense fallback={null}>
+                <Pagination pageCount={meta.pageCount} currentPage={meta.currentPage} />
+              </Suspense>
+              <span className="text-sm text-gray-400">{meta.currentPage} of {meta.pageCount}</span>
             </div>
           </div>
         </div>

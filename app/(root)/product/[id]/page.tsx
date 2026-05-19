@@ -17,6 +17,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           products: {
             include: {
               items: true,
+              ingredients: true,
             },
           },
         },
