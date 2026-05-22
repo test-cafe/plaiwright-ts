@@ -53,8 +53,7 @@ export const useChoosePizza = (items?: IProduct['items']) => {
           quantity: 1,
         });
         toast.success('Item added to cart');
-      } catch (error) {
-        console.error(error);
+      } catch {
         toast.error('Failed to add to cart');
       }
     }

@@ -36,7 +36,6 @@ export const useCartStore = create<CartState>((set) => ({
       const data = await Api.cart.fetchCart();
       set(getCartDetails(data));
     } catch (error) {
-      console.error(error);
       set({ error: true });
     } finally {
       set({ loading: false });
@@ -49,7 +48,6 @@ export const useCartStore = create<CartState>((set) => ({
       const data = await Api.cart.fetchCart();
       set(getCartDetails(data));
     } catch (error) {
-      console.error(error);
       set({ error: true });
     } finally {
       set({ loading: false });
@@ -62,7 +60,6 @@ export const useCartStore = create<CartState>((set) => ({
       const data = await Api.cart.fetchCart();
       set(getCartDetails(data));
     } catch (error) {
-      console.error(error);
       set({ error: true });
     } finally {
       set({ loading: false });
@@ -76,7 +73,6 @@ export const useCartStore = create<CartState>((set) => ({
       set(getCartDetails(data));
     } catch (error) {
       set({ error: true });
-      console.error(error);
     } finally {
       set({ loading: false });
     }

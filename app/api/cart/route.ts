@@ -1,5 +1,6 @@
 import { calcCartItemTotalAmount } from '@/lib/calc-cart-item-total-amount';
 import { getUserSession } from '@/lib/get-user-session';
+import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
 import { CreateCartItemValues } from '@/services/dto/cart';
 import { NextRequest, NextResponse } from 'next/server';
@@ -41,7 +42,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(userCart ?? { items: [] });
   } catch (err) {
-    console.log(err);
+    logger.error({ err }, '[CART_GET] failed');
     return NextResponse.json({ message: '[CART_GET] Server error' }, { status: 500 });
   }
 }
@@ -183,7 +184,7 @@ export async function POST(req: NextRequest) {
     resp.cookies.set('cartToken', cartToken);
     return resp;
   } catch (err) {
-    console.log('[CART_POST] ERROR:', err);
+    logger.error({ err }, '[CART_POST] failed');
     return NextResponse.json({ message: '[CART_POST] Server error' }, { status: 500 });
   }
 }
@@ -222,7 +223,7 @@ export async function DELETE(req: NextRequest) {
 
     return NextResponse.json(updatedCart);
   } catch (err) {
-    console.log(err);
+    logger.error({ err }, '[CART_DELETE] failed');
     return NextResponse.json({ message: '[CART_DELETE] Server error' }, { status: 500 });
   }
 }

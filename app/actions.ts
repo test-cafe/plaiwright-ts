@@ -2,13 +2,13 @@
 
 import { TFormOrderData } from '@/components/shared/schemas/order-form-schema';
 import { getUserSession } from '@/lib/get-user-session';
+import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
 import { sendEmail } from '@/lib/send-email';
-import { OrderStatus, Prisma, UserRole } from '@prisma/client';
+import { OrderStatus, Prisma } from '@prisma/client';
 import { hashSync } from 'bcrypt';
 import { cookies } from 'next/headers';
 import { createPayment } from '@/lib/create-payment';
-import { CreateUserFormValues } from '@/components/shared/dashboard/forms/create-user-form/constants';
 import { revalidatePath } from 'next/cache';
 
 export async function registerUser(body: Prisma.UserCreateInput) {
@@ -31,7 +31,7 @@ export async function registerUser(body: Prisma.UserCreateInput) {
       },
     });
   } catch (error) {
-    console.log('Error [CREATE_USER]', error);
+    logger.error({ error }, '[ACTION] registerUser failed');
     throw error;
   }
 }
@@ -41,7 +41,7 @@ export async function updateUserInfo(body: Prisma.UserCreateInput) {
     const currentUser = await getUserSession();
 
     if (!currentUser) {
-      throw new Error('Пользователь не найден');
+      throw new Error('User not found');
     }
 
     await prisma.user.update({
@@ -54,7 +54,7 @@ export async function updateUserInfo(body: Prisma.UserCreateInput) {
       },
     });
   } catch (error) {
-    console.log('Error [UPDATE_USER]', error);
+    logger.error({ error }, '[ACTION] updateUserInfo failed');
     throw error;
   }
 }
@@ -91,12 +91,12 @@ export async function createOrder(data: TFormOrderData) {
       },
     });
 
-    if (!userCart?.totalAmount) {
-      return;
-    }
-
     if (!userCart) {
       throw new Error('Cart not found');
+    }
+
+    if (!userCart.totalAmount) {
+      return;
     }
 
     const order = await prisma.order.create({
@@ -157,7 +157,7 @@ export async function createOrder(data: TFormOrderData) {
 
     return paymentData.confirmation.confirmation_url;
   } catch (error) {
-    console.log('[CART_CHECKOUT_POST] Server error', error);
+    logger.error({ error }, '[ACTION] createOrder failed');
     throw error;
   }
 }
@@ -177,7 +177,7 @@ export async function updateUser(id: number, data: Prisma.UserUpdateInput) {
       },
     });
   } catch (error) {
-    console.log('Error [UPDATE_USER]', error);
+    logger.error({ error }, '[ACTION] updateUser failed');
     throw error;
   }
 }
@@ -193,7 +193,7 @@ export async function createUser(data: Prisma.UserCreateInput) {
 
     revalidatePath('/dashboard/users');
   } catch (error) {
-    console.log('Error [CREATE_USER]', error);
+    logger.error({ error }, '[ACTION] createUser failed');
     throw error;
   }
 }
@@ -217,7 +217,7 @@ export async function updateCategory(id: number, data: Prisma.CategoryUpdateInpu
       data,
     });
   } catch (error) {
-    console.log('Error [UPDATE_CATEGORY]', error);
+    logger.error({ error }, '[ACTION] updateCategory failed');
     throw error;
   }
 }
@@ -230,7 +230,7 @@ export async function createCategory(data: Prisma.CategoryCreateInput) {
 
     revalidatePath('/dashboard/categories');
   } catch (error) {
-    console.log('Error [CREATE_CATEGORY]', error);
+    logger.error({ error }, '[ACTION] createCategory failed');
     throw error;
   }
 }
@@ -254,7 +254,7 @@ export async function updateProduct(id: number, data: Prisma.ProductUpdateInput)
       data,
     });
   } catch (error) {
-    console.log('Error [UPDATE_PRODUCT]', error);
+    logger.error({ error }, '[ACTION] updateProduct failed');
     throw error;
   }
 }
@@ -267,7 +267,7 @@ export async function createProduct(data: Prisma.ProductCreateInput) {
 
     revalidatePath('/dashboard/products');
   } catch (error) {
-    console.log('Error [CREATE_PRODUCT]', error);
+    logger.error({ error }, '[ACTION] createProduct failed');
     throw error;
   }
 }
@@ -291,7 +291,7 @@ export async function updateIngredient(id: number, data: Prisma.IngredientUpdate
       data,
     });
   } catch (error) {
-    console.log('Error [UPDATE_INGREDIENT]', error);
+    logger.error({ error }, '[ACTION] updateIngredient failed');
     throw error;
   }
 }
@@ -308,7 +308,7 @@ export async function createIngredient(data: Prisma.IngredientCreateInput) {
 
     revalidatePath('/dashboard/ingredients');
   } catch (error) {
-    console.log('Error [CREATE_INGREDIENT]', error);
+    logger.error({ error }, '[ACTION] createIngredient failed');
     throw error;
   }
 }
@@ -323,7 +323,7 @@ export async function deleteIngredient(id: number) {
 
     revalidatePath('/dashboard/ingredients');
   } catch (error) {
-    console.log('Error [DELETE_INGREDIENT]', error);
+    logger.error({ error }, '[ACTION] deleteIngredient failed');
     throw error;
   }
 }
@@ -337,7 +337,7 @@ export async function updateProductItem(id: number, data: Prisma.ProductItemUpda
       data,
     });
   } catch (error) {
-    console.log('Error [UPDATE_PRODUCT_ITEM]', error);
+    logger.error({ error }, '[ACTION] updateProductItem failed');
     throw error;
   }
 }
@@ -355,7 +355,7 @@ export async function createProductItem(data: Prisma.ProductItemUncheckedCreateI
 
     revalidatePath('/dashboard/product-items');
   } catch (error) {
-    console.log('Error [CREATE_PRODUCT_ITEM]', error);
+    logger.error({ error }, '[ACTION] createProductItem failed');
     throw error;
   }
 }
@@ -370,7 +370,7 @@ export async function deleteProductItem(id: number) {
 
     revalidatePath('/dashboard/product-items');
   } catch (error) {
-    console.log('Error [DELETE_PRODUCT_ITEM]', error);
+    logger.error({ error }, '[ACTION] deleteProductItem failed');
     throw error;
   }
 }

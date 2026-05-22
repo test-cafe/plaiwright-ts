@@ -52,9 +52,8 @@ export const ChoosePizzaForm: React.FC<Props> = ({
     try {
       await addPizza();
       onClickAdd?.();
-    } catch (error) {
+    } catch {
       toast.error('Failed to add to cart');
-      console.error(error);
     }
   };
 

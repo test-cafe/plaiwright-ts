@@ -48,10 +48,8 @@ export const CreateUserForm: React.FC<Props> = ({ values }) => {
         router.push('/dashboard/users');
       }
 
-      console.log(data);
     } catch (error) {
-      console.log('Error [CREATE_USER]', error);
-      toast.error('Произошла ошибка');
+      toast.error('Something went wrong');
     } finally {
       setLoading(false);
     }
@@ -62,10 +60,10 @@ export const CreateUserForm: React.FC<Props> = ({ values }) => {
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <DashboardFormHeader isEdit={!!values} loading={loading} />
         <div className="border shadow-sm rounded-lg grid grid-cols-2 gap-5 p-5">
-          <FormInput name="fullName" label="ФИО" required />
+          <FormInput name="fullName" label="Full name" required />
           <FormInput name="email" label="E-Mail" required />
-          <FormInput name="role" label="Роль" required />
-          <FormInput name="password" label="Пароль" required />
+          <FormInput name="role" label="Role" required />
+          <FormInput name="password" label="Password" required />
         </div>
       </form>
     </FormProvider>

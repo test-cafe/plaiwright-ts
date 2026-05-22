@@ -1,5 +1,6 @@
 import { calcCartItemTotalAmount } from '@/lib/calc-cart-item-total-amount';
 import { getUserSession } from '@/lib/get-user-session';
+import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -78,7 +79,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     return NextResponse.json(updatedCart);
   } catch (err) {
-    console.log(err);
+    logger.error({ err }, '[CART_PATCH] failed');
     return NextResponse.json({ message: '[CART_PATCH] Server error' }, { status: 500 });
   }
 }
@@ -110,7 +111,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
     return NextResponse.json(updatedCart);
   } catch (err) {
-    console.log(err);
+    logger.error({ err }, '[CART_DELETE] failed');
     return NextResponse.json({ message: '[CART_DELETE] Server error' }, { status: 500 });
   }
 }

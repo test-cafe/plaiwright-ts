@@ -6,12 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { FormInput } from "@/components/shared/form/form-input";
 import { useRouter, useParams } from "next/navigation";
-import {
-  createProduct,
-  createUser,
-  updateProduct,
-  updateUser,
-} from "@/app/actions";
+import { createProduct, updateProduct } from "@/app/actions";
 import toast from "react-hot-toast";
 import { DashboardFormHeader } from "../../dashboard-form-header";
 import {
@@ -55,11 +50,8 @@ export const CreateProductForm: React.FC<Props> = ({ values }) => {
         await createProduct(fields);
         router.push("/dashboard/products");
       }
-
-      console.log(data);
-    } catch (error) {
-      console.log("Error [CREATE_PRODUCT]", error);
-      toast.error("Произошла ошибка");
+    } catch {
+      toast.error("Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -67,14 +59,13 @@ export const CreateProductForm: React.FC<Props> = ({ values }) => {
 
   const onUploadSuccess = (url: string) => {
     form.setValue("imageUrl", url);
-    toast.success("Файл успешно загружена!", {
+    toast.success("File uploaded successfully!", {
       icon: "👏",
     });
   };
 
-  const onUploadError = (error: Error) => {
-    console.log(error);
-    toast.error("Не удалось загрузить файл", {
+  const onUploadError = (_error: Error) => {
+    toast.error("Failed to upload file", {
       icon: "😩",
     });
   };
@@ -89,17 +80,19 @@ export const CreateProductForm: React.FC<Props> = ({ values }) => {
     <FormProvider {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <DashboardFormHeader isEdit={!!values} loading={loading} />
-        <div className="flex items-center border shadow-sm rounded-lg grid grid-cols-2 gap-5 p-5">
+        <div className="border shadow-sm rounded-lg grid grid-cols-2 gap-5 p-5">
           <div>
-            <FormInput name="name" label="Название продукта" required />
-            <FormInput name="category" label="Категория" required />
+            <FormInput name="name" label="Product name" required />
+            <FormInput name="category" label="Category" required />
           </div>
 
           {imageUrl ? (
             <div className="relative w-40 h-40">
-              <img className="object-cover rounded" src={imageUrl} />
+              <img className="object-cover rounded" src={imageUrl} alt="Product image" />
               <button
+                type="button"
                 onClick={onClickRemoveImage}
+                aria-label="Remove image"
                 className="absolute top-2 right-2 bg-red-600 rounded-sm p-2"
               >
                 <Trash2 className="w-4 h-4 text-white" />

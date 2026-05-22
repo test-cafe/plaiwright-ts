@@ -6,21 +6,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { FormInput } from "@/components/shared/form/form-input";
 import { useRouter, useParams } from "next/navigation";
-import {
-  createIngredient,
-  createProduct,
-  createUser,
-  updateIngredient,
-  updateProduct,
-  updateUser,
-} from "@/app/actions";
+import { createIngredient, updateIngredient } from "@/app/actions";
 import toast from "react-hot-toast";
 import { DashboardFormHeader } from "../../dashboard-form-header";
-import {
-  CreateProductFormSchema,
-  CreateProductFormValues,
-} from "@/components/shared/dashboard/forms/create-product-form/constants";
-import { Ingredient, Product } from "@prisma/client";
+import { Ingredient } from "@prisma/client";
 import { Trash2 } from "lucide-react";
 import { UploadButton } from "@/lib/uploadthing";
 import {
@@ -61,10 +50,7 @@ export const CreateIngredientForm: React.FC<Props> = ({ values }) => {
         await createIngredient({ ...fields, imageUrl: fields.imageUrl ?? '' });
         router.push("/dashboard/ingredients");
       }
-
-      console.log(data);
-    } catch (error) {
-      console.log("Error [CREATE_INGREDIENT]", error);
+    } catch {
       toast.error("An error occurred");
     } finally {
       setLoading(false);
@@ -78,8 +64,7 @@ export const CreateIngredientForm: React.FC<Props> = ({ values }) => {
     });
   };
 
-  const onUploadError = (error: Error) => {
-    console.log(error);
+  const onUploadError = (_error: Error) => {
     toast.error("Failed to upload file", {
       icon: "😩",
     });
@@ -95,7 +80,7 @@ export const CreateIngredientForm: React.FC<Props> = ({ values }) => {
     <FormProvider {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <DashboardFormHeader isEdit={!!values} loading={loading} />
-        <div className="flex items-center border shadow-sm rounded-lg grid grid-cols-2 gap-5 p-5">
+        <div className="border shadow-sm rounded-lg grid grid-cols-2 gap-5 p-5">
           <div>
             <FormInput name="name" label="Name" required />
             <FormInput name="price" label="Price" required />
@@ -103,9 +88,11 @@ export const CreateIngredientForm: React.FC<Props> = ({ values }) => {
 
           {imageUrl ? (
             <div className="relative w-40 h-40">
-              <img className="object-cover rounded" src={imageUrl} />
+              <img className="object-cover rounded" src={imageUrl} alt="Ingredient image" />
               <button
+                type="button"
                 onClick={onClickRemoveImage}
+                aria-label="Remove image"
                 className="absolute top-2 right-2 bg-red-600 rounded-sm p-2"
               >
                 <Trash2 className="w-4 h-4 text-white" />

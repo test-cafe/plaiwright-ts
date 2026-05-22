@@ -39,8 +39,7 @@ export const LoginForm: React.FC<Props> = ({ onClose }) => {
       onClose?.();
       router.refresh();
     } catch (error) {
-      console.log('Error [LOGIN]', error);
-      toast.error('Не удалось войти', {
+      toast.error('Failed to sign in', {
         icon: '❌',
       });
     }

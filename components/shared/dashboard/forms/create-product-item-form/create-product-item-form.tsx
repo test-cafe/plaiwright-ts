@@ -51,10 +51,8 @@ export const CreateProductItemForm: React.FC<Props> = ({ values, products }) => 
         router.push('/dashboard/product-items');
       }
 
-      console.log(data);
     } catch (error) {
-      console.log('Error [CREATE_PRODUCT_ITEM]', error);
-      toast.error('Произошла ошибка');
+      toast.error('Something went wrong');
     } finally {
       setLoading(false);
     }
@@ -65,11 +63,11 @@ export const CreateProductItemForm: React.FC<Props> = ({ values, products }) => 
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <DashboardFormHeader isEdit={!!values} loading={loading} />
         <div className="border shadow-sm rounded-lg grid grid-cols-2 gap-5 p-5">
-          <FormInput name="price" label="Цена" required />
+          <FormInput name="price" label="Price" required />
           <FormSelect
             name="size"
-            label="Размер"
-            placeholder="Выберите размер..."
+            label="Size"
+            placeholder="Select size..."
             items={[
               {
                 value: '20',
@@ -87,23 +85,23 @@ export const CreateProductItemForm: React.FC<Props> = ({ values, products }) => 
           />
           <FormSelect
             name="pizzaType"
-            label="Тип пиццы"
-            placeholder="Выберите тип пиццы..."
+            label="Pizza type"
+            placeholder="Select pizza type..."
             items={[
               {
                 value: '1',
-                label: 'Традиционное',
+                label: 'Traditional',
               },
               {
                 value: '2',
-                label: 'Тонкое',
+                label: 'Thin',
               },
             ]}
           />
           <FormSelect
             name="productId"
-            label="Продукт"
-            placeholder="Выберите продукт..."
+            label="Product"
+            placeholder="Select product..."
             items={products.map((product) => ({
               value: product.id.toString(),
               label: product.name,

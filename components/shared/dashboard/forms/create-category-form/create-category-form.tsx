@@ -39,9 +39,7 @@ export const CreateCategoryForm: React.FC<Props> = ({ values }) => {
         router.push('/dashboard/categories');
       }
 
-      console.log(data);
     } catch (error) {
-      console.log('Error [CREATE_CATEGORY]', error);
       toast.error('An error occurred');
     } finally {
       setLoading(false);

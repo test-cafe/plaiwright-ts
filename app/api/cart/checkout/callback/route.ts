@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { OrderStatus } from '@prisma/client';
+import { logger } from '@/lib/logger';
 import { sendEmail } from '@/lib/send-email';
 import { prisma } from '@/lib/prisma';
 import { CartItemDTO } from '@/services/dto/cart';
@@ -16,6 +17,7 @@ export async function POST(req: NextRequest) {
   try {
     event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!);
   } catch (err) {
+    logger.error({ err }, '[STRIPE_WEBHOOK] signature verification failed');
     return new Response(`Webhook error: ${err}`, { status: 400 });
   }
 

@@ -1,4 +1,5 @@
 import { NextAuthOptions } from 'next-auth';
+import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
 import { compare, hashSync } from 'bcrypt';
 import { UserRole } from '@prisma/client';
@@ -68,8 +69,6 @@ export const authOptions: NextAuthOptions = {
           return true;
         }
 
-        console.log(user, account);
-
         if (!user.email) {
           return false;
         }
@@ -109,7 +108,7 @@ export const authOptions: NextAuthOptions = {
 
         return true;
       } catch (error) {
-        console.log(error);
+        logger.error({ error }, '[AUTH] signIn failed');
         return false;
       }
     },
