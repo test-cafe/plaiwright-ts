@@ -7,7 +7,7 @@ export const Footer: React.FC = () => {
   return (
     <footer className="bg-gray-50 border-t border-gray-100 mt-auto">
       <Container className="py-10 px-4 sm:px-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-8">
+        <div className="flex flex-col items-center sm:flex-row sm:items-center sm:justify-between gap-8">
 
           <Link href="/" className="flex items-center gap-3 shrink-0">
             <Image src="/logo.png" width={32} height={32} alt="Next Pizza logo" />

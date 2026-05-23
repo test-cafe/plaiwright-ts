@@ -87,7 +87,7 @@ export const Header: React.FC<Props> = ({ className, hasSearch = true, hasCart =
                   className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
                   onClick={() => { setMobileSearchOpen(true); }}
                 >
-                  <Search className="w-5 h-5 text-gray-500" />
+                  <Search className="w-6 h-6 text-gray-700" />
                 </button>
               )}
             </div>
