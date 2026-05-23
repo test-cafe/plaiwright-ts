@@ -2,6 +2,12 @@ import { Container } from '@/components/shared/container';
 import { Title } from '@/components/shared/title';
 import { ResetPasswordForm } from '@/components/shared/reset-password-form';
 import { redirect } from 'next/navigation';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Next Pizza | Reset Password',
+  robots: 'noindex',
+};
 
 interface Props {
   searchParams: Promise<{ token?: string }>;

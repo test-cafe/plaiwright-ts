@@ -1,4 +1,10 @@
 import { InfoBlock } from '@/components/shared/info-block';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Next Pizza | Access Denied',
+  robots: 'noindex',
+};
 
 export default function UnauthorizedPage() {
   return (

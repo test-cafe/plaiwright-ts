@@ -3,6 +3,21 @@ import { Container } from '@/components/shared/container';
 import { ProductsGroupList } from '@/components/shared/products-group-list';
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const product = await prisma.product.findFirst({ where: { id: Number(id) } });
+
+  if (!product) {
+    return { title: 'Next Pizza | Product not found' };
+  }
+
+  return {
+    title: `Next Pizza | ${product.name}`,
+    description: `Order ${product.name} from Next Pizza — fast delivery, fresh ingredients.`,
+  };
+}
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

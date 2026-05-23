@@ -2,6 +2,12 @@ import React from 'react';
 import './globals.css';
 import { Providers } from './providers';
 import { Nunito } from 'next/font/google';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Next Pizza',
+  description: 'Order pizza online — fast delivery, fresh ingredients, great taste.',
+};
 
 const nunito = Nunito({
   subsets: ['cyrillic'],

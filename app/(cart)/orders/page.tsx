@@ -1,10 +1,16 @@
 import { Container } from '@/components/shared/container';
 import { OrderItem } from '@/components/shared/order-item';
-
 import { Title } from '@/components/shared/title';
 import { getUserSession } from '@/lib/get-user-session';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Next Pizza | My Orders',
+  description: 'View your order history.',
+  robots: 'noindex',
+};
 
 export default async function OrdersPage() {
   const session = await getUserSession();
