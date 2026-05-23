@@ -53,9 +53,11 @@ export const Stories: React.FC<Props> = ({ className }) => {
             >
               <Image
                 fill
+                sizes="(max-width: 640px) 120px, (max-width: 768px) 160px, 200px"
                 className="object-cover"
                 src={story.previewImageUrl}
                 alt=""
+                priority={i === 0}
               />
             </button>
           ))}

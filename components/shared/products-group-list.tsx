@@ -14,6 +14,7 @@ interface Props {
   className?: string;
   listClassName?: string;
   categoryId: number;
+  prioritizeFirst?: boolean;
 }
 
 export const ProductsGroupList: React.FC<Props> = ({
@@ -22,6 +23,7 @@ export const ProductsGroupList: React.FC<Props> = ({
   listClassName,
   categoryId,
   className,
+  prioritizeFirst,
 }) => {
   const setActiveId = useCategoryStore((state) => state.setActiveId);
   const intersectionRef = React.useRef(null);
@@ -49,6 +51,7 @@ export const ProductsGroupList: React.FC<Props> = ({
               imageUrl={product.imageUrl}
               price={product.items[0].price}
               ingredients={product.ingredients}
+              priority={prioritizeFirst && i === 0}
             />
           ))}
       </div>

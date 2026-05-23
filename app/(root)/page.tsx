@@ -31,13 +31,14 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
           <div className="flex-1">
             <div className="flex flex-col gap-8 md:gap-16">
               {categoryProducts.map(
-                (category) =>
+                (category, i) =>
                   category.products.length > 0 && (
                     <ProductsGroupList
                       key={category.id}
                       title={category.name}
                       products={category.products}
                       categoryId={category.id}
+                      prioritizeFirst={i === 0}
                     />
                   ),
               )}

@@ -13,9 +13,10 @@ interface Props {
   imageUrl?: string;
   ingredients?: { name: string }[];
   className?: string;
+  priority?: boolean;
 }
 
-export const ProductCard: React.FC<Props> = ({ id, name, price, imageUrl, ingredients, className }) => {
+export const ProductCard: React.FC<Props> = ({ id, name, price, imageUrl, ingredients, className, priority }) => {
   return (
     <div className={cn(className)}>
       <Link href={`/product/${id}`} data-testid="product-card">
@@ -26,6 +27,7 @@ export const ProductCard: React.FC<Props> = ({ id, name, price, imageUrl, ingred
             alt={name}
             width={215}
             height={215}
+            priority={priority}
           />
         </div>
 

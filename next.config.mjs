@@ -4,6 +4,7 @@ const nextConfig = {
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'cdn.dodostatic.net' },
+      { protocol: 'https', hostname: 'media.dodostatic.net' },
       { protocol: 'https', hostname: 'github.githubassets.com' },
       { protocol: 'https', hostname: 'fonts.gstatic.com' },
     ],
