@@ -6,6 +6,7 @@ import ReactStories from 'react-insta-stories';
 import { Api } from '@/services/api-client';
 import { IStory } from '@/services/stories';
 import { X } from 'lucide-react';
+import Image from 'next/image';
 
 interface Props {
   className?: string;
@@ -47,11 +48,12 @@ export const Stories: React.FC<Props> = ({ className }) => {
               key={story.id}
               type="button"
               aria-label={`Open story ${i + 1}`}
-              className="flex-shrink-0 rounded-md overflow-hidden"
+              className="relative flex-shrink-0 rounded-md overflow-hidden w-[120px] h-[160px] sm:w-[160px] sm:h-[200px] md:w-[200px] md:h-[250px]"
               onClick={() => onClickStory(story)}
             >
-              <img
-                className="w-[120px] h-[160px] sm:w-[160px] sm:h-[200px] md:w-[200px] md:h-[250px] object-cover block"
+              <Image
+                fill
+                className="object-cover"
                 src={story.previewImageUrl}
                 alt=""
               />

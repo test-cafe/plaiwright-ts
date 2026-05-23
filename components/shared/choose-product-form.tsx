@@ -7,6 +7,7 @@ import { Title } from './title';
 import { IProduct } from '@/hooks/use-choose-pizza';
 import toast from 'react-hot-toast';
 import { useCart } from '@/hooks/use-cart';
+import Image from 'next/image';
 
 interface Props {
   imageUrl: string;
@@ -50,9 +51,12 @@ export const ChooseProductForm: React.FC<Props> = ({
   return (
     <div className={cn(className, 'flex flex-col md:flex-row flex-1')}>
       <div className="flex items-center justify-center flex-1 relative w-full">
-        <img
+        <Image
           src={imageUrl}
           alt={name}
+          width={350}
+          height={350}
+          priority
           className="relative left-2 top-2 transition-all z-10 duration-300 w-[200px] h-[200px] md:w-[350px] md:h-[350px]"
         />
       </div>

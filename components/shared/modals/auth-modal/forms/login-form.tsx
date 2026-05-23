@@ -9,6 +9,7 @@ import { FormInput } from '@/components/shared/form';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface Props {
   onClose?: VoidFunction;
@@ -54,7 +55,7 @@ export const LoginForm: React.FC<Props> = ({ onClose }) => {
             <Title text="Sign in" size="md" className="font-bold" />
             <p className="text-gray-400">Enter your email to sign in to your account</p>
           </div>
-          <img src="/assets/images/phone-icon.png" alt="phone-icon" width={60} height={60} />
+          <Image src="/assets/images/phone-icon.png" alt="phone-icon" width={60} height={60} />
         </div>
 
         <FormInput name="email" label="E-Mail" placeholder="user@test.ru" required />

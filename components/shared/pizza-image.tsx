@@ -1,6 +1,7 @@
 import { PizzaSize } from '@/lib/pizza-details-to-text';
 import { cn } from '@/lib/utils';
 import React from 'react';
+import Image from 'next/image';
 
 interface Props {
   className?: string;
@@ -11,9 +12,12 @@ interface Props {
 export const PizzaImage: React.FC<Props> = ({ className, imageUrl, size }) => {
   return (
     <div className={cn('flex items-center justify-center relative w-full h-[220px] md:flex-1 md:h-auto', className)}>
-      <img
+      <Image
         src={imageUrl}
-        alt="Logo"
+        alt="Pizza"
+        width={500}
+        height={500}
+        priority
         className={cn('relative transition-all z-10 duration-300', {
           'w-[150px] h-[150px] sm:w-[250px] sm:h-[250px] md:w-[300px] md:h-[300px]': size === 20,
           'w-[200px] h-[200px] sm:w-[300px] sm:h-[300px] md:w-[400px] md:h-[400px]': size === 30,

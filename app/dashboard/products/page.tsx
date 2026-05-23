@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DeleteButton } from '@/components/shared/dashboard/delete-button';
@@ -34,7 +35,7 @@ export default async function ProductsPage() {
             <TableRow key={product.id}>
               <TableCell>{product.id}</TableCell>
               <TableCell>
-                <img src={product.imageUrl} className="w-10 h-10 rounded object-cover" alt={product.name} />
+                <Image src={product.imageUrl} width={40} height={40} className="w-10 h-10 rounded object-cover" alt={product.name} />
               </TableCell>
               <TableCell>{product.name}</TableCell>
               <TableCell>{product.category.name}</TableCell>
