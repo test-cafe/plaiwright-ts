@@ -20,7 +20,7 @@ export const Categories: React.FC<Props> = ({ items, className }) => {
   }, [activeId]);
 
   return (
-    <div className={cn('flex gap-1 bg-gray-50 p-1 rounded-2xl overflow-x-auto max-w-full', className)}>
+    <div className={cn('relative flex gap-1 bg-gray-50 p-1 rounded-2xl overflow-x-auto max-w-full [mask-image:linear-gradient(to_right,black_85%,transparent_100%)]', className)}>
       {items.map((category) => (
         <a
           key={category.id}

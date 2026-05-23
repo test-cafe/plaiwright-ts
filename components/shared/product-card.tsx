@@ -20,32 +20,59 @@ export const ProductCard: React.FC<Props> = ({ id, name, price, imageUrl, ingred
   return (
     <div className={cn('group transition-transform duration-200 hover:-translate-y-1', className)}>
       <Link href={`/product/${id}`} data-testid="product-card">
-        <div className="flex justify-center p-6 bg-secondary sm:rounded-lg h-[260px] transition-shadow duration-200 group-hover:shadow-lg">
+        {/* Mobile: horizontal layout */}
+        <div className="flex sm:hidden items-center gap-4 bg-secondary rounded-xl p-3 transition-shadow duration-200 group-hover:shadow-md">
           <Image
-            className="w-full sm:w-[215px] h-[215px] object-contain transition-transform duration-200 group-hover:scale-105"
+            className="w-[90px] h-[90px] object-contain shrink-0 transition-transform duration-200 group-hover:scale-105"
             src={imageUrl ?? '/assets/images/not-found.png'}
             alt={name}
-            width={215}
-            height={215}
+            width={90}
+            height={90}
             priority={priority}
           />
+          <div className="flex-1 min-w-0">
+            <Title text={name} size="sm" className="font-bold mb-1 leading-tight" />
+            <p className="text-xs text-gray-400 line-clamp-2 mb-2">
+              {ingredients?.map((i) => i.name).join(', ') || ''}
+            </p>
+            <div className="flex items-center justify-between">
+              <span className="text-base font-bold">from ${price}</span>
+              <Button size="sm" className="font-bold">
+                <Plus className="w-4 h-4 mr-1" />
+                Add
+              </Button>
+            </div>
+          </div>
         </div>
 
-        <Title text={name} size="sm" className="mb-1 mt-3 font-bold px-4 sm:px-0" />
+        {/* Desktop: vertical layout */}
+        <div className="hidden sm:block">
+          <div className="flex justify-center p-6 bg-secondary rounded-lg h-[260px] transition-shadow duration-200 group-hover:shadow-lg">
+            <Image
+              className="w-[215px] h-[215px] object-contain transition-transform duration-200 group-hover:scale-105"
+              src={imageUrl ?? '/assets/images/not-found.png'}
+              alt={name}
+              width={215}
+              height={215}
+              priority={priority}
+            />
+          </div>
 
-        <p className="text-sm text-gray-400 line-clamp-2 px-4 sm:px-0">
-          {ingredients?.map((i) => i.name).join(', ') || ''}
-        </p>
+          <Title text={name} size="sm" className="mb-1 mt-3 font-bold" />
 
-        <div className="flex justify-between items-center mt-4 px-4 sm:px-0">
-          <span className="text-[20px]">
-            from <b>${price}</b>
-          </span>
+          <p className="text-sm text-gray-400 line-clamp-2">
+            {ingredients?.map((i) => i.name).join(', ') || ''}
+          </p>
 
-          <Button className="text-base font-bold">
-            <Plus className="w-5 h-5 mr-1" />
-            Add
-          </Button>
+          <div className="flex justify-between items-center mt-4">
+            <span className="text-[20px]">
+              from <b>${price}</b>
+            </span>
+            <Button className="text-base font-bold">
+              <Plus className="w-5 h-5 mr-1" />
+              Add
+            </Button>
+          </div>
         </div>
       </Link>
     </div>

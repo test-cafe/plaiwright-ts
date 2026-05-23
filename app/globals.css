@@ -104,6 +104,12 @@ body::-webkit-scrollbar,
   .text-balance { text-wrap: balance; }
 }
 
+/* ── Shimmer skeleton ── */
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 /* ── NProgress ── */
 #nprogress .bar        { @apply bg-primary !important; }
 #nprogress .peg        { @apply shadow-md shadow-primary !important; }

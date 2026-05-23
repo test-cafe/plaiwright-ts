@@ -7,10 +7,29 @@ import { useCart } from '@/hooks/use-cart';
 
 interface Props {
   className?: string;
+  compact?: boolean;
 }
 
-export const CartButton: React.FC<Props> = ({ className }) => {
+export const CartButton: React.FC<Props> = ({ className, compact }) => {
   const { totalAmount, items, loading } = useCart();
+
+  if (compact) {
+    return (
+      <CartDrawer>
+        <button
+          data-testid="cart-button"
+          aria-label={`Cart, ${items.length} items`}
+          className={cn('relative p-2 rounded-lg hover:bg-gray-100 transition-colors', className)}>
+          <ShoppingCart className="w-6 h-6 text-gray-700" strokeWidth={2} />
+          {items.length > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 bg-primary text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center leading-none">
+              {items.length}
+            </span>
+          )}
+        </button>
+      </CartDrawer>
+    );
+  }
 
   return (
     <CartDrawer>

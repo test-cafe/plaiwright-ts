@@ -1,17 +1,20 @@
 import { Suspense } from 'react';
 import { Container } from '@/components/shared/container';
 import { Filters } from '@/components/shared/filters';
-
 import { Pagination } from '@/components/shared/pagination';
 import { ProductsGroupList } from '@/components/shared/products-group-list';
 import { Stories } from '@/components/shared/stories';
 import { Title } from '@/components/shared/title';
 import { TopBar } from '@/components/shared/top-bar';
 import { GetSearchParams, findPizzas } from '@/lib/find-pizzas';
+import { prisma } from '@/lib/prisma';
 
 export default async function HomePage({ searchParams }: { searchParams: Promise<GetSearchParams> }) {
   const resolvedParams = await searchParams;
-  const [categoryProducts, meta] = await findPizzas(resolvedParams);
+  const [[categoryProducts, meta], stories] = await Promise.all([
+    findPizzas(resolvedParams),
+    prisma.story.findMany({ include: { items: true } }),
+  ]);
 
   return (
     <>
@@ -21,7 +24,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
 
       <TopBar categories={categoryProducts.filter((c) => c.products.length > 0)} />
 
-      <Stories />
+      <Stories initialStories={stories} />
 
       <Container className="mt-4 md:mt-10 pb-14 px-4 sm:px-6">
         <div className="flex gap-[80px]">

@@ -11,10 +11,11 @@ interface Props {
   onClickOpenModal?: VoidFunction;
   className?: string;
   mobile?: boolean;
+  iconOnly?: boolean;
   testId?: string;
 }
 
-export const ProfileButton: React.FC<Props> = ({ className, onClickOpenModal, mobile, testId }) => {
+export const ProfileButton: React.FC<Props> = ({ className, onClickOpenModal, mobile, iconOnly, testId }) => {
   const { data: session } = useSession();
 
   return (
@@ -22,6 +23,11 @@ export const ProfileButton: React.FC<Props> = ({ className, onClickOpenModal, mo
       {session ? (
         <Popover>
           <PopoverTrigger asChild>
+            {iconOnly ? (
+              <button aria-label="Open profile menu" className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                <CircleUser className="w-6 h-6 text-gray-700" />
+              </button>
+            ) : (
             <Button
               variant={mobile ? 'ghost' : 'secondary'}
               aria-label="Open profile menu"
@@ -29,6 +35,7 @@ export const ProfileButton: React.FC<Props> = ({ className, onClickOpenModal, mo
               <CircleUser size={18} />
               {session.user?.name?.split(' ')[0] ?? 'Profile'}
             </Button>
+            )}
           </PopoverTrigger>
           <PopoverContent className="w-44 p-2">
             {session.user?.role === 'ADMIN' && (
@@ -60,6 +67,13 @@ export const ProfileButton: React.FC<Props> = ({ className, onClickOpenModal, mo
             </button>
           </PopoverContent>
         </Popover>
+      ) : iconOnly ? (
+        <button
+          onClick={onClickOpenModal}
+          aria-label="Sign in"
+          className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+          <CircleUser className="w-6 h-6 text-gray-700" />
+        </button>
       ) : (
         <Button
           onClick={onClickOpenModal}

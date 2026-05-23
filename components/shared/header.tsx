@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Image from 'next/image';
-import { Menu, Search, X } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useClickAway } from 'react-use';
 
 import { Container } from './container';
@@ -12,7 +12,6 @@ import Link from 'next/link';
 import { CartButton } from './cart-button';
 import { AuthModal } from './modals/auth-modal';
 import { ProfileButton } from './profile-button';
-import { MobileCartMenuItem } from './mobile-cart-menu-item';
 import { useRouter, useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
 
@@ -24,7 +23,6 @@ interface Props {
 
 export const Header: React.FC<Props> = ({ className, hasSearch = true, hasCart = true }) => {
   const [openAuthModal, setOpenAuthModal] = React.useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = React.useState(false);
   const mobileSearchRef = React.useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
@@ -87,7 +85,7 @@ export const Header: React.FC<Props> = ({ className, hasSearch = true, hasCart =
                 <button
                   aria-label="Open search"
                   className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                  onClick={() => { setMobileMenuOpen(false); setMobileSearchOpen(true); }}
+                  onClick={() => { setMobileSearchOpen(true); }}
                 >
                   <Search className="w-5 h-5 text-gray-500" />
                 </button>
@@ -96,33 +94,18 @@ export const Header: React.FC<Props> = ({ className, hasSearch = true, hasCart =
           </>
         )}
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1">
           <AuthModal open={openAuthModal} onClose={() => setOpenAuthModal(false)} />
 
+          {/* Desktop */}
           <ProfileButton className="hidden md:flex" onClickOpenModal={onClickOpenAuthModal} testId="sign-in-button" />
           {hasCart && <CartButton className="hidden md:flex" />}
 
-          <button
-            className={cn('md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors', mobileSearchOpen && 'hidden')}
-            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
-            onClick={() => setMobileMenuOpen((v) => !v)}
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          {/* Mobile — always visible icons */}
+          <ProfileButton iconOnly className={cn('md:hidden', mobileSearchOpen && 'hidden')} onClickOpenModal={onClickOpenAuthModal} />
+          {hasCart && <CartButton compact className={cn('md:hidden', mobileSearchOpen && 'hidden')} />}
         </div>
       </Container>
-
-      <div
-        className={cn(
-          'md:hidden overflow-hidden transition-all duration-300 ease-in-out',
-          mobileMenuOpen ? 'max-h-[12rem] opacity-100 pb-4' : 'max-h-0 opacity-0',
-        )}
-      >
-        <Container className="flex flex-col items-end gap-3 pt-2">
-          <ProfileButton mobile onClickOpenModal={() => { onClickOpenAuthModal(); setMobileMenuOpen(false); }} />
-          {hasCart && <MobileCartMenuItem />}
-        </Container>
-      </div>
     </header>
   );
 };
