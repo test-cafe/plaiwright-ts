@@ -21,12 +21,12 @@ export default async function ProductItemsPage() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>#</TableHead>
-            <TableHead>Product</TableHead>
-            <TableHead>Price</TableHead>
-            <TableHead>Size</TableHead>
-            <TableHead>Pizza Type</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead className="min-w-[3rem]">#</TableHead>
+            <TableHead className="min-w-[14rem]">Product</TableHead>
+            <TableHead className="min-w-[6rem]">Price</TableHead>
+            <TableHead className="min-w-[5rem]">Size</TableHead>
+            <TableHead className="min-w-[7rem]">Pizza Type</TableHead>
+            <TableHead className="min-w-[8rem]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

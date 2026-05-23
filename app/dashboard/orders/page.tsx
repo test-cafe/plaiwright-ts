@@ -13,13 +13,13 @@ export default async function AdminOrdersPage() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>#</TableHead>
-            <TableHead>Full Name</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Phone</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Total</TableHead>
-            <TableHead>Created At</TableHead>
+            <TableHead className="min-w-[3rem]">#</TableHead>
+            <TableHead className="min-w-[10rem]">Full Name</TableHead>
+            <TableHead className="min-w-[16rem]">Email</TableHead>
+            <TableHead className="min-w-[8rem]">Phone</TableHead>
+            <TableHead className="min-w-[7rem]">Status</TableHead>
+            <TableHead className="min-w-[6rem]">Total</TableHead>
+            <TableHead className="min-w-[8rem]">Created At</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

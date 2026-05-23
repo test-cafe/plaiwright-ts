@@ -19,11 +19,11 @@ export default async function IngredientsPage() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>#</TableHead>
-            <TableHead>Image</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Price</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead className="min-w-[3rem]">#</TableHead>
+            <TableHead className="min-w-[5rem]">Image</TableHead>
+            <TableHead className="min-w-[14rem]">Name</TableHead>
+            <TableHead className="min-w-[6rem]">Price</TableHead>
+            <TableHead className="min-w-[8rem]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

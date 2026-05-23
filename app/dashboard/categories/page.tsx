@@ -18,9 +18,9 @@ export default async function CategoriesPage() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>#</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead className="min-w-[3rem]">#</TableHead>
+            <TableHead className="min-w-[12rem]">Name</TableHead>
+            <TableHead className="min-w-[8rem]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

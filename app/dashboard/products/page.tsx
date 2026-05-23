@@ -22,12 +22,12 @@ export default async function ProductsPage() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>#</TableHead>
-            <TableHead>Image</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead>Created At</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead className="min-w-[3rem]">#</TableHead>
+            <TableHead className="min-w-[5rem]">Image</TableHead>
+            <TableHead className="min-w-[14rem]">Name</TableHead>
+            <TableHead className="min-w-[8rem]">Category</TableHead>
+            <TableHead className="min-w-[8rem]">Created At</TableHead>
+            <TableHead className="min-w-[8rem]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

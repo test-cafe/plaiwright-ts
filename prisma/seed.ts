@@ -59,7 +59,7 @@ const ingredients = [
     imageUrl: 'https://cdn.dodostatic.net/static/Img/Ingredients/000D3A22FA54A81411E9AFA67259A324',
   },
   {
-    name: 'Ham',
+    name: 'Pepperoni',
     price: 79,
     imageUrl: 'https://cdn.dodostatic.net/static/Img/Ingredients/000D3A39D824A82E11E9AFA61B9A8D61',
   },
@@ -160,7 +160,7 @@ async function up() {
   await prisma.product.createMany({
     data: [
       {
-        name: 'Ham and mushroom omelette',
+        name: 'Sausage and mushroom omelette',
         imageUrl:
           'https://media.dodostatic.net/image/r:292x292/11EE7970321044479C1D1085457A36EB.webp',
         categoryId: 2,
@@ -178,7 +178,7 @@ async function up() {
         categoryId: 2,
       },
       {
-        name: 'Ham and cheese sandwich',
+        name: 'Turkey and cheese sandwich',
         imageUrl:
           'https://media.dodostatic.net/image/r:292x292/11EE796FF0059B799A17F57A9E64C725.webp',
         categoryId: 3,
