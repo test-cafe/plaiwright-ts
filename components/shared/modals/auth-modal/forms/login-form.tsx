@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import { FormInput } from '@/components/shared/form';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 interface Props {
   onClose?: VoidFunction;
@@ -58,6 +59,14 @@ export const LoginForm: React.FC<Props> = ({ onClose }) => {
 
         <FormInput name="email" label="E-Mail" placeholder="user@test.ru" required />
         <FormInput type="password" name="password" label="Password" placeholder="Password" required />
+        <div className="text-right -mt-3">
+          <Link
+            href="/forgot-password"
+            onClick={onClose}
+            className="text-sm text-primary hover:underline">
+            Forgot password?
+          </Link>
+        </div>
 
         <Button disabled={form.formState.isSubmitting} className="h-12 text-base" type="submit">
           {form.formState.isSubmitting ? 'Signing in...' : 'Sign in'}

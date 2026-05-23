@@ -20,7 +20,8 @@ model User {
   orders           Order[]
   cartItems        CartItem[]
   cart             Cart?
-  verificationCode VerificationCode?
+  verificationCode   VerificationCode?
+  passwordResetToken PasswordResetToken?
 
   provider   String?
   providerId String?
@@ -152,6 +153,15 @@ model VerificationCode {
   updatedAt DateTime @updatedAt
 
   @@unique([userId, code])
+}
+
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
 
 model Story {

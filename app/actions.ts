@@ -7,6 +7,7 @@ import { prisma } from '@/lib/prisma';
 import { sendEmail } from '@/lib/send-email';
 import { OrderStatus, Prisma } from '@prisma/client';
 import { hashSync } from 'bcrypt';
+import { randomBytes } from 'crypto';
 import { cookies } from 'next/headers';
 import { createPayment } from '@/lib/create-payment';
 import { revalidatePath } from 'next/cache';
@@ -371,6 +372,64 @@ export async function deleteProductItem(id: number) {
     revalidatePath('/dashboard/product-items');
   } catch (error) {
     logger.error({ error }, '[ACTION] deleteProductItem failed');
+    throw error;
+  }
+}
+
+export async function requestPasswordReset(email: string) {
+  try {
+    const user = await prisma.user.findFirst({ where: { email } });
+
+    if (!user) {
+      return; // Don't reveal whether the email exists
+    }
+
+    const token = randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
+
+    await prisma.passwordResetToken.upsert({
+      where: { userId: user.id },
+      update: { token, expiresAt },
+      create: { userId: user.id, token, expiresAt },
+    });
+
+    const resetUrl = `${process.env.NEXTAUTH_URL ?? 'http://localhost:3000'}/reset-password?token=${token}`;
+
+    await sendEmail(
+      email,
+      'Reset your Next Pizza password',
+      `<p>Hi ${user.fullName},</p>
+       <p>Click the link below to reset your password. This link expires in 30 minutes.</p>
+       <p><a href="${resetUrl}">${resetUrl}</a></p>
+       <p>If you didn't request this, you can safely ignore this email.</p>`,
+    );
+  } catch (error) {
+    logger.error({ error }, '[ACTION] requestPasswordReset failed');
+    throw error;
+  }
+}
+
+export async function resetPassword(token: string, password: string) {
+  try {
+    const resetToken = await prisma.passwordResetToken.findFirst({ where: { token } });
+
+    if (!resetToken) {
+      throw new Error('Invalid or expired reset link');
+    }
+
+    if (resetToken.expiresAt < new Date()) {
+      await prisma.passwordResetToken.delete({ where: { id: resetToken.id } });
+      throw new Error('Reset link has expired. Please request a new one.');
+    }
+
+    await prisma.user.update({
+      where: { id: resetToken.userId },
+      data: { password: hashSync(password, 10) },
+    });
+
+    await prisma.passwordResetToken.delete({ where: { id: resetToken.id } });
+  } catch (error) {
+    logger.error({ error }, '[ACTION] resetPassword failed');
     throw error;
   }
 }
