@@ -3,7 +3,7 @@
 import { useSession, signOut } from 'next-auth/react';
 import React from 'react';
 import { Button } from '../ui/button';
-import { CircleUser, LogOut, ShoppingBag } from 'lucide-react';
+import { CircleUser, LayoutDashboard, LogOut, ShoppingBag } from 'lucide-react';
 import Link from 'next/link';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 
@@ -31,6 +31,14 @@ export const ProfileButton: React.FC<Props> = ({ className, onClickOpenModal, mo
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-44 p-2">
+            {session.user?.role === 'ADMIN' && (
+              <Link href="/dashboard">
+                <button className="flex items-center gap-2 w-full px-3 py-2 rounded-md text-sm hover:bg-secondary cursor-pointer">
+                  <LayoutDashboard size={16} />
+                  Dashboard
+                </button>
+              </Link>
+            )}
             <Link href="/profile">
               <button className="flex items-center gap-2 w-full px-3 py-2 rounded-md text-sm hover:bg-secondary cursor-pointer">
                 <CircleUser size={16} />
