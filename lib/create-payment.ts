@@ -26,8 +26,8 @@ export async function createPayment(details: {
       },
     ],
     mode: 'payment',
-    success_url: 'http://localhost:3000/?paid',
-    cancel_url: 'http://localhost:3000/cart',
+    success_url: `${process.env.NEXTAUTH_URL ?? 'http://localhost:3000'}/?paid`,
+    cancel_url: `${process.env.NEXTAUTH_URL ?? 'http://localhost:3000'}/cart`,
     metadata: {
       order_id: String(details.orderId),
     },

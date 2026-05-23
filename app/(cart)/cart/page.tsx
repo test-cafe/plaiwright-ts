@@ -112,7 +112,11 @@ export default function CartPage() {
                 title="1. Cart"
                 endAdornment={
                   totalAmount > 0 && (
-                    <button className="flex items-center gap-3 text-gray-400 hover:text-gray-600">
+                    <button
+                      type="button"
+                      className="flex items-center gap-3 text-gray-400 hover:text-gray-600"
+                      onClick={() => items.forEach((item) => removeCartItem(item.id))}
+                    >
                       <Trash2 size={16} />
                       Clear cart
                     </button>
