@@ -14,16 +14,18 @@ interface Props {
 
 export const ChooseProductModal: React.FC<Props> = ({ product }) => {
   const router = useRouter();
+  const [open, setOpen] = React.useState(true);
   const isPizzaForm = Boolean(product.items[0].pizzaType);
 
   const onCloseModal = () => {
+    setOpen(false);
     React.startTransition(() => {
       router.back();
     });
   };
 
   return (
-    <Dialog open={Boolean(product)} onOpenChange={onCloseModal}>
+    <Dialog open={open} onOpenChange={onCloseModal}>
       <DialogContent className="p-0 w-full max-w-[1060px] min-h-[500px] bg-white overflow-hidden flex">
         <VisuallyHidden.Root>
           <DialogTitle>{product.name}</DialogTitle>

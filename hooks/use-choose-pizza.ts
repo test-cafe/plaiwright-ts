@@ -18,8 +18,8 @@ export const useChoosePizza = (items?: IProduct['items']) => {
   const [selectedIngredientsIds, { toggle: toggleAddIngredient }] = useSet<number>(new Set([]));
   const { addCartItem, loading } = useCart();
 
-  const [size, setSize] = React.useState<PizzaSize>(20);
-  const [type, setType] = React.useState<PizzaType>(1);
+  const [size, setSize] = React.useState<PizzaSize>(() => (items?.[0]?.size as PizzaSize) ?? 20);
+  const [type, setType] = React.useState<PizzaType>(() => (items?.[0]?.pizzaType as PizzaType) ?? 1);
 
   const activeSizes = items?.filter((item) => item.pizzaType === type).map((item) => item.size);
   const productItem = items?.find((item) => item.pizzaType === type && item.size === Number(size));

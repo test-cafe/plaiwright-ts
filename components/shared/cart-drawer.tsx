@@ -27,7 +27,7 @@ export const CartDrawer: React.FC<React.PropsWithChildren> = ({ children }) => {
   return (
     <Sheet>
       <SheetTrigger asChild>{children}</SheetTrigger>
-      <SheetContent data-testid="cart-drawer" className="flex flex-col justify-between pb-0 bg-[#F4F1EE]">
+      <SheetContent data-testid="cart-drawer" className="flex flex-col justify-between pb-0 bg-[#F4F1EE] sm:max-w-lg">
         <div className={clsx('flex flex-col h-full', !totalAmount && 'justify-center')}>
           <SheetHeader className={clsx(!totalAmount && 'sr-only')}>
             <SheetTitle data-testid="cart-item-count">

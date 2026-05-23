@@ -202,7 +202,7 @@ export default function CartPage() {
                 </div>
               </WhiteBlock>
             </div>
-            <div className="w-full lg:w-2/5 lg:max-w-sm">
+            <div className="w-full lg:w-2/5">
               <CartSidebar
                 totalPrice={totalPrice}
                 totalAmount={totalAmount}

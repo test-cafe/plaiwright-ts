@@ -58,9 +58,9 @@ export const CartSidebar: React.FC<Props> = ({
       <Button
         type="submit"
         disabled={!totalAmount || submitting}
-        className="w-full h-14 rounded-2xl mt-6 text-base font-bold">
+        className="w-full h-14 rounded-2xl mt-6 text-base font-bold gap-2">
         Proceed to payment
-        <ArrowRight className="w-5 ml-2" />
+        <ArrowRight className="w-5 h-5 shrink-0" />
       </Button>
     </WhiteBlock>
   );

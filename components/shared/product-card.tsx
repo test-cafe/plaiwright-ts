@@ -35,9 +35,9 @@ export const ProductCard: React.FC<Props> = ({ id, name, price, imageUrl, ingred
             <p className="text-xs text-gray-400 line-clamp-2 mb-2">
               {ingredients?.map((i) => i.name).join(', ') || ''}
             </p>
-            <div className="flex items-center justify-between">
-              <span className="text-base font-bold">from ${price}</span>
-              <Button size="sm" className="font-bold">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-base font-bold truncate">from ${price}</span>
+              <Button size="sm" className="font-bold shrink-0">
                 <Plus className="w-4 h-4 mr-1" />
                 Add
               </Button>
@@ -64,11 +64,11 @@ export const ProductCard: React.FC<Props> = ({ id, name, price, imageUrl, ingred
             {ingredients?.map((i) => i.name).join(', ') || ''}
           </p>
 
-          <div className="flex justify-between items-center mt-4">
-            <span className="text-[20px]">
+          <div className="flex justify-between items-center mt-4 gap-2">
+            <span className="text-[20px] truncate">
               from <b>${price}</b>
             </span>
-            <Button className="text-base font-bold">
+            <Button className="text-base font-bold shrink-0">
               <Plus className="w-5 h-5 mr-1" />
               Add
             </Button>

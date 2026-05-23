@@ -33,85 +33,85 @@ const ingredients = [
   },
   {
     name: 'Creamy mozzarella',
-    price: 79,
+    price: 1.5,
     imageUrl:
       'https://cdn.dodostatic.net/static/Img/Ingredients/cdea869ef287426386ed634e6099a5ba.png',
   },
   {
     name: 'Cheddar and parmesan',
-    price: 79,
+    price: 1.5,
     imageUrl: 'https://cdn.dodostatic.net/static/Img/Ingredients/000D3A22FA54A81411E9AFA69C1FE796',
   },
   {
     name: 'Spicy jalapeño pepper',
-    price: 59,
+    price: 1,
     imageUrl:
       'https://cdn.dodostatic.net/static/Img/Ingredients/11ee95b6bfdf98fb88a113db92d7b3df.png',
   },
   {
     name: 'Tender chicken',
-    price: 79,
+    price: 1.5,
     imageUrl: 'https://cdn.dodostatic.net/static/Img/Ingredients/000D3A39D824A82E11E9AFA5B328D35A',
   },
   {
     name: 'Mushrooms',
-    price: 59,
+    price: 1,
     imageUrl: 'https://cdn.dodostatic.net/static/Img/Ingredients/000D3A22FA54A81411E9AFA67259A324',
   },
   {
     name: 'Pepperoni',
-    price: 79,
+    price: 1.5,
     imageUrl: 'https://cdn.dodostatic.net/static/Img/Ingredients/000D3A39D824A82E11E9AFA61B9A8D61',
   },
   {
     name: 'Spicy pepperoni',
-    price: 79,
+    price: 1.5,
     imageUrl: 'https://cdn.dodostatic.net/static/Img/Ingredients/000D3A22FA54A81411E9AFA6258199C3',
   },
   {
     name: 'Spicy chorizo',
-    price: 79,
+    price: 1.5,
     imageUrl: 'https://cdn.dodostatic.net/static/Img/Ingredients/000D3A22FA54A81411E9AFA62D5D6027',
   },
   {
     name: 'Pickled cucumbers',
-    price: 59,
+    price: 0.5,
     imageUrl: 'https://cdn.dodostatic.net/static/Img/Ingredients/000D3A21DA51A81211E9EA89958D782B',
   },
   {
     name: 'Fresh tomatoes',
-    price: 59,
+    price: 0.5,
     imageUrl: 'https://cdn.dodostatic.net/static/Img/Ingredients/000D3A39D824A82E11E9AFA7AC1A1D67',
   },
   {
     name: 'Red onion',
-    price: 59,
+    price: 0.5,
     imageUrl: 'https://cdn.dodostatic.net/static/Img/Ingredients/000D3A22FA54A81411E9AFA60AE6464C',
   },
   {
     name: 'Juicy pineapples',
-    price: 59,
+    price: 1,
     imageUrl: 'https://cdn.dodostatic.net/static/Img/Ingredients/000D3A21DA51A81211E9AFA6795BA2A0',
   },
   {
     name: 'Italian herbs',
-    price: 39,
+    price: 0.5,
     imageUrl:
       'https://cdn.dodostatic.net/static/Img/Ingredients/370dac9ed21e4bffaf9bc2618d258734.png',
   },
   {
     name: 'Sweet pepper',
-    price: 59,
+    price: 0.75,
     imageUrl: 'https://cdn.dodostatic.net/static/Img/Ingredients/000D3A22FA54A81411E9AFA63F774C1B',
   },
   {
     name: 'Feta cheese cubes',
-    price: 79,
+    price: 1.5,
     imageUrl: 'https://cdn.dodostatic.net/static/Img/Ingredients/000D3A39D824A82E11E9AFA6B0FFC349',
   },
   {
     name: 'Meatballs',
-    price: 79,
+    price: 2,
     imageUrl:
       'https://cdn.dodostatic.net/static/Img/Ingredients/b2f3a5d5afe44516a93cfc0d2ee60088.png',
   },
@@ -121,14 +121,14 @@ async function up() {
   await prisma.user.createMany({
     data: [
       {
-        fullName: 'User',
+        fullName: 'Test User',
         email: 'user@test.ru',
         password: hashSync('111111', 10),
         verified: new Date(),
         role: 'USER',
       },
       {
-        fullName: 'Admin',
+        fullName: 'Admin User',
         email: 'admin@test.ru',
         password: hashSync('111111', 10),
         verified: new Date(),

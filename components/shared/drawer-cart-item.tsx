@@ -1,6 +1,5 @@
 import { cn } from '@/lib/utils';
 import React from 'react';
-import debounce from 'lodash.debounce';
 import { CountButton } from './count-button';
 import { CartItemDetailsImage } from './cart-item-details/cart-item-details-image';
 import { CartItemInfo } from './cart-item-details/cart-item-info';
@@ -43,7 +42,7 @@ export const DrawerCartItem: React.FC<Props> = ({
 
         <hr className="my-3" />
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <CountButton onClick={onClickCountButton} value={quantity} />
 
           <div className="flex items-center gap-3">
