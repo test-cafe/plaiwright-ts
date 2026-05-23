@@ -15,7 +15,7 @@ export const MobileFilters: React.FC = () => {
           Filters
         </Button>
       </SheetTrigger>
-      <SheetContent side="bottom" className="h-[85vh] overflow-y-auto rounded-t-2xl px-6 pb-8">
+      <SheetContent side="bottom" className="h-[75vh] overflow-y-auto rounded-t-2xl px-6 pb-8 bg-white">
         <SheetHeader className="mb-4">
           <SheetTitle className="text-left text-lg font-bold">Filters</SheetTitle>
         </SheetHeader>

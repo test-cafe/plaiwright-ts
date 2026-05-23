@@ -42,8 +42,8 @@ export const SortPopup: React.FC<Props> = ({ className }) => {
             className,
           )}>
           <ArrowUpDown className="w-4 h-4" />
-          <b>Sort:</b>
-          <b className="text-primary">{currentLabel}</b>
+          <b>Sort</b>
+          <b className="text-primary hidden lg:inline">: {currentLabel}</b>
         </div>
       </PopoverTrigger>
       <PopoverContent className="w-[240px]">

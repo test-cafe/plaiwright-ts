@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Header } from '@/components/shared/header';
+import { Footer } from '@/components/shared/footer';
 
 export const metadata: Metadata = {
   title: 'Next Pizza | Home',
@@ -14,10 +15,13 @@ export default function RootLayout({
   modal: React.ReactNode;
 }>) {
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-white flex flex-col">
       <Header hasSearch />
-      {children}
-      {modal}
+      <div className="flex-1">
+        {children}
+        {modal}
+      </div>
+      <Footer />
     </main>
   );
 }
