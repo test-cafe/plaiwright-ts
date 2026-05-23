@@ -18,11 +18,11 @@ interface Props {
 
 export const ProductCard: React.FC<Props> = ({ id, name, price, imageUrl, ingredients, className, priority }) => {
   return (
-    <div className={cn(className)}>
+    <div className={cn('group transition-transform duration-200 hover:-translate-y-1', className)}>
       <Link href={`/product/${id}`} data-testid="product-card">
-        <div className="flex justify-center p-6 bg-secondary sm:rounded-lg h-[260px]">
+        <div className="flex justify-center p-6 bg-secondary sm:rounded-lg h-[260px] transition-shadow duration-200 group-hover:shadow-lg">
           <Image
-            className="w-full sm:w-[215px] h-[215px] object-contain"
+            className="w-full sm:w-[215px] h-[215px] object-contain transition-transform duration-200 group-hover:scale-105"
             src={imageUrl ?? '/assets/images/not-found.png'}
             alt={name}
             width={215}
@@ -42,7 +42,7 @@ export const ProductCard: React.FC<Props> = ({ id, name, price, imageUrl, ingred
             from <b>${price}</b>
           </span>
 
-          <Button variant="secondary" className="text-base font-bold">
+          <Button className="text-base font-bold">
             <Plus className="w-5 h-5 mr-1" />
             Add
           </Button>
