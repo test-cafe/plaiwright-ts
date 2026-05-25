@@ -100,28 +100,30 @@ export async function createOrder(data: TFormOrderData) {
       return;
     }
 
-    const order = await prisma.order.create({
-      data: {
-        userId,
-        fullName: data.firstName + ' ' + data.lastName,
-        email: data.email,
-        phone: data.phone,
-        address: data.address,
-        comment: data.comment,
-        totalAmount: userCart.totalAmount,
-        status: OrderStatus.PENDING,
-        items: JSON.stringify(userCart.items),
-      },
-    });
+    // Prisma 5.x bug: whole-number Float values are encoded as int4 in binary protocol,
+    // causing PostgreSQL 22P03. Use $queryRaw with explicit ::float8 and ::jsonb casts.
+    const itemsJson = JSON.stringify(JSON.parse(JSON.stringify(userCart.items)));
+    const [order] = await prisma.$queryRaw<{ id: number; totalAmount: number }[]>`
+      INSERT INTO "Order" ("userId", "fullName", email, phone, address, comment, "totalAmount", status, items, "createdAt", "updatedAt")
+      VALUES (
+        ${userId},
+        ${data.firstName + ' ' + data.lastName},
+        ${data.email},
+        ${data.phone},
+        ${data.address},
+        ${data.comment ?? null},
+        ${userCart.totalAmount}::float8,
+        ${OrderStatus.PENDING}::"OrderStatus",
+        ${itemsJson}::jsonb,
+        NOW(),
+        NOW()
+      )
+      RETURNING id, "totalAmount"
+    `;
 
-    await prisma.cart.update({
-      where: {
-        id: userCart.id,
-      },
-      data: {
-        totalAmount: 0,
-      },
-    });
+    await prisma.$executeRaw`
+      UPDATE "Cart" SET "totalAmount" = ${0}::float8, "updatedAt" = NOW() WHERE id = ${userCart.id}
+    `;
 
     await prisma.cartItem.deleteMany({
       where: {

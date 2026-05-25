@@ -49,6 +49,7 @@ export const useCartStore = create<CartState>((set) => ({
       set(getCartDetails(data));
     } catch (error) {
       set({ error: true });
+      throw error;
     } finally {
       set({ loading: false });
     }
@@ -61,6 +62,7 @@ export const useCartStore = create<CartState>((set) => ({
       set(getCartDetails(data));
     } catch (error) {
       set({ error: true });
+      throw error;
     } finally {
       set({ loading: false });
     }
@@ -73,6 +75,7 @@ export const useCartStore = create<CartState>((set) => ({
       set(getCartDetails(data));
     } catch (error) {
       set({ error: true });
+      throw error;
     } finally {
       set({ loading: false });
     }

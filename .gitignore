@@ -19,6 +19,7 @@
 # misc
 .DS_Store
 *.pem
+next-pizza-loom-script*.md
 
 # debug
 npm-debug.log*

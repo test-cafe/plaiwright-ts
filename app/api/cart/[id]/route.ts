@@ -34,9 +34,13 @@ async function updateCartTotalAmount(userId: number | undefined, cartToken: stri
 
   const totalAmount = userCart.items.reduce((acc, item) => acc + calcCartItemTotalAmount(item), 0);
 
-  return await prisma.cart.update({
+  await prisma.$executeRaw`
+    UPDATE "Cart" SET "totalAmount" = ${totalAmount}::float8, "updatedAt" = NOW()
+    WHERE id = ${userCart.id}
+  `;
+
+  return await prisma.cart.findFirst({
     where: { id: userCart.id },
-    data: { totalAmount },
     include: {
       items: {
         orderBy: { createdAt: 'desc' },

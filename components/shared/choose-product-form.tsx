@@ -34,9 +34,9 @@ export const ChooseProductForm: React.FC<Props> = ({
 
   const productPrice = productItem.price;
 
-  const handleClickAdd = () => {
+  const handleClickAdd = async () => {
     try {
-      addCartItem({
+      await addCartItem({
         productItemId: productItem.id,
         quantity: 1,
       });

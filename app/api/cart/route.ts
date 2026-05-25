@@ -103,31 +103,27 @@ async function getCartTotalAmount(cartId: number): Promise<number> {
 }
 
 async function updateCartTotalAmount(cartId: number, totalAmount: number) {
-  const updatedCart = await prisma.cart.update({
-    where: {
-      id: cartId,
-    },
-    data: {
-      totalAmount,
-    },
+  // Prisma 5.x bug: whole-number Float values are encoded as int4 in binary protocol,
+  // causing PostgreSQL 22P03. Use raw SQL with explicit ::float8 cast to bypass it.
+  await prisma.$executeRaw`
+    UPDATE "Cart" SET "totalAmount" = ${totalAmount}::float8, "updatedAt" = NOW()
+    WHERE id = ${cartId}
+  `;
+
+  const updatedCart = await prisma.cart.findFirst({
+    where: { id: cartId },
     include: {
       items: {
-        orderBy: {
-          createdAt: 'desc',
-        },
+        orderBy: { createdAt: 'desc' },
         include: {
-          productItem: {
-            include: {
-              product: true,
-            },
-          },
+          productItem: { include: { product: true } },
           ingredients: true,
         },
       },
     },
   });
 
-  return updatedCart;
+  return updatedCart!;
 }
 
 async function resolveUserId(sessionUserId: string | undefined): Promise<number | undefined> {

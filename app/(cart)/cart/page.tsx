@@ -9,6 +9,7 @@ import { Controller, FormProvider, useForm } from "react-hook-form";
 import { createOrder } from "@/app/actions";
 import { AdressInput } from "@/components/shared/adress-input";
 import { FormInput, FormTextarea } from "@/components/shared/form";
+import { ErrorText } from "@/components/shared/error-text";
 import {
   TFormOrderData,
   orderFormSchema,
@@ -188,8 +189,11 @@ export default function CartPage() {
                   <Controller
                     control={form.control}
                     name="address"
-                    render={({ field }) => (
-                      <AdressInput onChange={field.onChange} />
+                    render={({ field, fieldState }) => (
+                      <div>
+                        <AdressInput onChange={field.onChange} />
+                        {fieldState.error && <ErrorText text={fieldState.error.message!} />}
+                      </div>
                     )}
                   />
 
