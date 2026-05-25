@@ -2,6 +2,7 @@ import { getUserSession } from '@/lib/get-user-session';
 import { redirect } from 'next/navigation';
 import { DashboardMenu } from '@/components/shared/dashboard/dashboard-menu';
 
+export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Next Pizza | Admin' };
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
