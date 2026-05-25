@@ -58,12 +58,14 @@ async function findOrCreateCart(userId: number | undefined, cartToken: string | 
   });
 
   if (!userCart) {
-    userCart = await prisma.cart.create({
-      data: {
-        ...(userId ? { userId } : {}),
-        tokenId: cartToken,
-      },
-    });
+    // Prisma 5.x bug: includes Float default value in binary protocol, causing PostgreSQL 22P03.
+    // Use raw INSERT so the DB applies the DEFAULT directly without Prisma encoding it.
+    const [created] = await prisma.$queryRaw<{ id: number; totalAmount: number; tokenId: string | null; userId: number | null; createdAt: Date; updatedAt: Date }[]>`
+      INSERT INTO "Cart" ("tokenId", "userId", "createdAt", "updatedAt")
+      VALUES (${cartToken ?? null}, ${userId ?? null}, NOW(), NOW())
+      RETURNING *
+    `;
+    userCart = created;
   }
 
   return userCart;
