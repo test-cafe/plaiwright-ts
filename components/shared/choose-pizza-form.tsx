@@ -51,6 +51,7 @@ export const ChoosePizzaForm: React.FC<Props> = ({
   const handleClickAdd = async () => {
     try {
       await addPizza();
+      toast.success('Item added to cart');
       onClickAdd?.();
     } catch {
       toast.error('Failed to add to cart');

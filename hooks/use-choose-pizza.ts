@@ -1,5 +1,4 @@
 import React from 'react';
-import toast from 'react-hot-toast';
 import { useSet } from 'react-use';
 import { Ingredient, Product, ProductItem } from '@prisma/client';
 
@@ -44,18 +43,13 @@ export const useChoosePizza = (items?: IProduct['items']) => {
 
   const addPizza = async () => {
     if (productItem) {
-      try {
-        await addCartItem({
-          productItemId: productItem?.id,
-          pizzaSize: size,
-          type,
-          ingredientsIds: Array.from(selectedIngredientsIds),
-          quantity: 1,
-        });
-        toast.success('Item added to cart');
-      } catch {
-        toast.error('Failed to add to cart');
-      }
+      await addCartItem({
+        productItemId: productItem?.id,
+        pizzaSize: size,
+        type,
+        ingredientsIds: Array.from(selectedIngredientsIds),
+        quantity: 1,
+      });
     }
   };
 
