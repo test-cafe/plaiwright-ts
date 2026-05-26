@@ -1,4 +1,5 @@
 import { calcCartItemTotalAmount } from '@/lib/calc-cart-item-total-amount';
+import { getCartToken } from '@/lib/get-cart-token';
 import { getUserSession } from '@/lib/get-user-session';
 import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
@@ -8,7 +9,7 @@ import crypto from 'crypto';
 
 export async function GET(req: NextRequest) {
   try {
-    const cartToken = req.cookies.get('cartToken')?.value;
+    const cartToken = getCartToken(req);
     const currentUser = await getUserSession();
     const userId = await resolveUserId(currentUser?.id);
 
@@ -139,7 +140,7 @@ export async function POST(req: NextRequest) {
   try {
     const currentUser = await getUserSession();
     const userId = await resolveUserId(currentUser?.id);
-    let cartToken = req.cookies.get('cartToken')?.value;
+    let cartToken = getCartToken(req);
 
     const data = (await req.json()) as CreateCartItemValues;
 
@@ -189,7 +190,7 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const cartToken = req.cookies.get('cartToken')?.value;
+    const cartToken = getCartToken(req);
     const currentUser = await getUserSession();
     const userId = await resolveUserId(currentUser?.id);
 
