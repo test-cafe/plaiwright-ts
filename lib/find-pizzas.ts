@@ -39,6 +39,7 @@ export const findPizzas = async (params: GetSearchParams) => {
         products: {
           orderBy: productsOrderBy,
           where: {
+            name: params.query ? { contains: params.query, mode: 'insensitive' } : undefined,
             ingredients: ingredientsIdArr
               ? {
                   some: {
