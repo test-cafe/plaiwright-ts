@@ -1,5 +1,4 @@
 import type { Config } from 'tailwindcss';
-import { withUt } from 'uploadthing/tw';
 
 // html { font-size: 62.5% } → 1rem = 10px.
 // Tailwind's defaults assume 16px base, so every rem value is multiplied
@@ -128,4 +127,4 @@ const config = {
   plugins: [require('tailwindcss-animate')],
 } satisfies Config;
 
-export default withUt(config);
+export default config;
