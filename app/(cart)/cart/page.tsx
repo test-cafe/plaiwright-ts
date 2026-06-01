@@ -145,7 +145,7 @@ export default function CartPage() {
                 </div>
 
                 {!totalAmount && (
-                  <p className="text-center text-gray-400 p-10">
+                  <p data-testid="cart-empty" className="text-center text-gray-400 p-10">
                     Cart is empty
                   </p>
                 )}

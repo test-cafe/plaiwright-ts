@@ -30,6 +30,7 @@ export const ProfileButton: React.FC<Props> = ({ className, onClickOpenModal, mo
             ) : (
             <Button
               variant={mobile ? 'ghost' : 'secondary'}
+              data-testid="profile-button"
               aria-label="Open profile menu"
               className="flex items-center gap-2">
               <CircleUser size={18} />
@@ -78,7 +79,7 @@ export const ProfileButton: React.FC<Props> = ({ className, onClickOpenModal, mo
         <Button
           onClick={onClickOpenModal}
           variant={mobile ? 'ghost' : 'outline'}
-          {...(testId && { 'data-testid': testId })}
+          data-testid={testId ?? 'auth-button'}
           className="flex items-center gap-2"
         >
           <CircleUser size={18} />

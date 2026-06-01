@@ -69,7 +69,7 @@ export const LoginForm: React.FC<Props> = ({ onClose }) => {
           </Link>
         </div>
 
-        <Button disabled={form.formState.isSubmitting} className="h-12 text-base" type="submit">
+        <Button data-testid="login-submit" disabled={form.formState.isSubmitting} className="h-12 text-base" type="submit">
           {form.formState.isSubmitting ? 'Signing in...' : 'Sign in'}
         </Button>
       </form>

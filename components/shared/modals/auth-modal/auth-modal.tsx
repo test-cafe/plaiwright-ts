@@ -28,7 +28,7 @@ export const AuthModal: React.FC<Props> = ({ open, onClose }) => {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="w-full max-w-lg bg-white p-6 sm:p-10">
+      <DialogContent data-testid="auth-modal" className="w-full max-w-lg bg-white p-6 sm:p-10">
         <VisuallyHidden.Root>
           <DialogTitle>{type === 'login' ? 'Sign in' : 'Register'}</DialogTitle>
         </VisuallyHidden.Root>
@@ -75,7 +75,7 @@ export const AuthModal: React.FC<Props> = ({ open, onClose }) => {
           </Button>
         </div>
 
-        <Button variant="outline" onClick={onSwitchType} type="button" data-testid="auth-switch-button" className="h-12">
+        <Button variant="outline" onClick={onSwitchType} type="button" data-testid="register-tab" className="h-12">
           {type !== 'login' ? 'Sign in' : 'Register'}
         </Button>
       </DialogContent>

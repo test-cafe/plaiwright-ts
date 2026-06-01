@@ -25,7 +25,7 @@ export const CartSidebar: React.FC<Props> = ({
     <WhiteBlock className={cn('p-6 sticky top-4', className)}>
       <div className="flex flex-col gap-1">
         <span className="text-xl">Total:</span>
-        <span className="text-4xl font-extrabold">${totalPrice}</span>
+        <span data-testid="cart-total" className="text-4xl font-extrabold">${totalPrice}</span>
       </div>
 
       <div className="flex my-4">
@@ -57,6 +57,7 @@ export const CartSidebar: React.FC<Props> = ({
 
       <Button
         type="submit"
+        data-testid="checkout-button"
         disabled={!totalAmount || submitting}
         className="w-full h-14 rounded-2xl mt-6 text-base font-bold gap-2">
         Proceed to payment

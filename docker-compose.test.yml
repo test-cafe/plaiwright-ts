@@ -1,0 +1,17 @@
+services:
+  db-test:
+    image: postgres:16
+    container_name: pizza_test_db
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: pizza_test
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test -d pizza_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    tmpfs:
+      - /var/lib/postgresql/data

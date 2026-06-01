@@ -22,6 +22,7 @@ export const Ingredient: React.FC<Props> = ({
 }) => {
   return (
     <div
+      data-testid="ingredient"
       onClick={onClick}
       className={cn(
         'flex items-center flex-col p-1 rounded-md w-full text-center relative cursor-pointer shadow-md bg-white',

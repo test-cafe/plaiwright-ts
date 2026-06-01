@@ -46,7 +46,7 @@ export const ForgotPasswordForm: React.FC = () => {
               Enter your email and we&apos;ll send you a link to reset your password.
             </p>
             <FormInput name="email" label="E-Mail" placeholder="user@example.com" required />
-            <Button disabled={form.formState.isSubmitting} className="h-12 text-base" type="submit">
+            <Button data-testid="reset-submit" disabled={form.formState.isSubmitting} className="h-12 text-base" type="submit">
               {form.formState.isSubmitting ? 'Sending...' : 'Send reset link'}
             </Button>
           </form>

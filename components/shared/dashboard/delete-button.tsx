@@ -18,7 +18,9 @@ interface Props {
 }
 
 export const DeleteButton: React.FC<Props> = ({ id, type, className }) => {
-  const onClickRemove = async (id: number) => {
+  const [confirming, setConfirming] = React.useState(false);
+
+  const onClickRemove = async () => {
     if (type === 'user') {
       await deleteUser(id);
     } else if (type === 'category') {
@@ -32,8 +34,30 @@ export const DeleteButton: React.FC<Props> = ({ id, type, className }) => {
     }
   };
 
+  if (confirming) {
+    return (
+      <div className="flex items-center gap-2">
+        <Button
+          data-testid={`confirm-delete`}
+          onClick={onClickRemove}
+          className="w-auto h-8 px-3 text-xs text-white bg-red-600 hover:bg-red-700">
+          Delete
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => setConfirming(false)}
+          className="w-auto h-8 px-3 text-xs">
+          Cancel
+        </Button>
+      </div>
+    );
+  }
+
   return (
-    <Button onClick={() => onClickRemove(id)} className="w-10 h-10 p-0 text-white">
+    <Button
+      data-testid={`delete-${id}`}
+      onClick={() => setConfirming(true)}
+      className={`w-10 h-10 p-0 text-white ${className ?? ''}`}>
       <Trash2 size={16} />
     </Button>
   );

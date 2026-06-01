@@ -30,6 +30,7 @@ export const PizzaSelector: React.FC<Props> = ({
         items={pizzaSizes}
         onClick={onClickSize}
         selectedValue={selectedSize}
+        testIdPrefix="pizza-size"
       />
 
       <GroupVariants
@@ -37,6 +38,7 @@ export const PizzaSelector: React.FC<Props> = ({
         items={pizzaTypes}
         onClick={onClickPizzaType}
         selectedValue={selectedPizzaType}
+        testIdPrefix="pizza-type"
       />
     </div>
   );

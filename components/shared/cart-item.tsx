@@ -22,7 +22,7 @@ export const CartItem: React.FC<Props> = ({
   onClickRemove,
 }) => {
   return (
-    <div className={cn('flex items-center justify-between', className)}>
+    <div data-testid="cart-item" className={cn('flex items-center justify-between', className)}>
       <div className="flex items-center gap-3 sm:gap-5 flex-1">
         <CartItemDetails.Image src={imageUrl} />
         <CartItemDetails.Info name={name} />
@@ -32,7 +32,7 @@ export const CartItem: React.FC<Props> = ({
 
       <div className="flex items-center gap-3 sm:gap-5 ml-3 sm:ml-10 md:ml-20">
         <CartItemDetails.CountButton onClick={onClickCountButton} value={quantity} />
-        <button onClick={onClickRemove}>
+        <button data-testid="remove-item" onClick={onClickRemove}>
           <X className="text-gray-400 cursor-pointer hover:text-gray-600" size={20} />
         </button>
       </div>

@@ -83,10 +83,12 @@ export const ChoosePizzaForm: React.FC<Props> = ({
           />
         </div>
 
+        <p data-testid="product-price" className="sr-only">${totalPrice}</p>
+
         <Button
           loading={loading}
           onClick={handleClickAdd}
-          data-testid="add-to-cart-button"
+          data-testid="add-to-cart"
           className="h-[55px] px-10 text-base rounded-[18px] w-full">
           Add to cart for ${totalPrice}
         </Button>
