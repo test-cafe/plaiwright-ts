@@ -5,6 +5,7 @@ import { CartSidebar } from "@/components/shared/cart-sidebar";
 import { Container } from "@/components/shared/container";
 import { CartItemSkeleton } from "@/components/shared/skeletons/cart-item-skeleton";
 import { Controller, FormProvider, useForm } from "react-hook-form";
+import { IMaskInput } from "react-imask";
 
 import { createOrder } from "@/app/actions";
 import { AdressInput } from "@/components/shared/adress-input";
@@ -172,10 +173,25 @@ export default function CartPage() {
                     className="text-base"
                     placeholder="E-Mail"
                   />
-                  <FormInput
+                  <Controller
+                    control={form.control}
                     name="phone"
-                    className="text-base"
-                    placeholder="Phone"
+                    render={({ field, fieldState }) => (
+                      <div className="text-base">
+                        <IMaskInput
+                          mask="+{1} (000) 000-0000"
+                          value={field.value}
+                          onAccept={(_: string, mask: { unmaskedValue: string }) =>
+                            field.onChange(mask.unmaskedValue ? '+' + mask.unmaskedValue : '')
+                          }
+                          onBlur={field.onBlur}
+                          placeholder="+1 (555) 000-0000"
+                          autoComplete="tel"
+                          className="flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-md ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        />
+                        {fieldState.error && <ErrorText text={fieldState.error.message!} />}
+                      </div>
+                    )}
                   />
                 </div>
               </WhiteBlock>
@@ -191,7 +207,7 @@ export default function CartPage() {
                     name="address"
                     render={({ field, fieldState }) => (
                       <div>
-                        <AdressInput onChange={field.onChange} />
+                        <AdressInput onChange={field.onChange} value={field.value} />
                         {fieldState.error && <ErrorText text={fieldState.error.message!} />}
                       </div>
                     )}

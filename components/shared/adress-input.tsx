@@ -3,13 +3,16 @@ import { Input } from '@/components/ui/input';
 
 interface Props {
   onChange?: (value?: string) => void;
+  value?: string;
 }
 
-export const AdressInput: React.FC<Props> = ({ onChange }) => {
+export const AdressInput: React.FC<Props> = ({ onChange, value }) => {
   return (
     <Input
       className="h-12 text-md"
       placeholder="123 Main St, City, State, ZIP"
+      autoComplete="street-address"
+      value={value ?? ''}
       onChange={(e) => onChange?.(e.target.value)}
     />
   );
