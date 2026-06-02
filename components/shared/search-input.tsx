@@ -21,8 +21,8 @@ export const SearchInput = () => {
 
   useDebounce(
     async () => {
-      const products = await Api.products.search(searchQuery);
-      setProducts(products);
+      const result = await Api.products.search(searchQuery);
+      setProducts(Array.isArray(result) ? result : []);
     },
     100,
     [searchQuery],
