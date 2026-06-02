@@ -1,6 +1,4 @@
-import { defineConfig } from '@cucumber/cucumber';
-
-export default defineConfig({
+const config = {
   paths: ['tests/features/**/*.feature'],
   require: ['tests/e2e/step-definitions/**/*.ts'],
   requireModule: ['ts-node/register'],
@@ -9,4 +7,6 @@ export default defineConfig({
   worldParameters: {
     baseUrl: process.env.NEXTAUTH_URL ?? 'http://localhost:3000',
   },
-});
+};
+
+export default config;
