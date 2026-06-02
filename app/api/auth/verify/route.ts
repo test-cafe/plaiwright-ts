@@ -1,7 +1,10 @@
+import { rateLimit } from '@/lib/rate-limit';
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(req: NextRequest) {
+  const limited = rateLimit(req, { limit: 10, window: 60, prefix: 'auth:verify' });
+  if (limited) return limited;
   const code = req.nextUrl.searchParams.get('code');
 
   if (!code) {

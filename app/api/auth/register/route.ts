@@ -1,8 +1,12 @@
+import { rateLimit } from '@/lib/rate-limit';
 import { prisma } from '@/lib/prisma';
 import { hashSync } from 'bcrypt';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
+  const limited = rateLimit(req, { limit: 3, window: 60, prefix: 'auth:register' });
+  if (limited) return limited;
+
   try {
     const { fullName, email, password } = await req.json();
 
