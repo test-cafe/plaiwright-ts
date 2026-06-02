@@ -1,6 +1,6 @@
 'use server';
 
-import { TFormOrderData } from '@/components/shared/schemas/order-form-schema';
+import { orderFormSchema, TFormOrderData } from '@/components/shared/schemas/order-form-schema';
 import { getUserSession } from '@/lib/get-user-session';
 import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
@@ -62,6 +62,8 @@ export async function updateUserInfo(body: Prisma.UserCreateInput) {
 
 export async function createOrder(data: TFormOrderData) {
   try {
+    orderFormSchema.parse(data);
+
     const currentUser = await getUserSession();
     if (!currentUser?.id) {
       throw new Error('Please sign in to place an order');

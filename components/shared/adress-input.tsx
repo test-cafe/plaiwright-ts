@@ -9,7 +9,7 @@ export const AdressInput: React.FC<Props> = ({ onChange }) => {
   return (
     <Input
       className="h-12 text-md"
-      placeholder="Delivery address"
+      placeholder="123 Main St, City, State, ZIP"
       onChange={(e) => onChange?.(e.target.value)}
     />
   );
