@@ -23,19 +23,27 @@ export default async function AdminOrdersPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {orders.map((order) => (
-            <TableRow key={order.id}>
-              <TableCell>{order.id}</TableCell>
-              <TableCell>{order.fullName}</TableCell>
-              <TableCell>{order.email}</TableCell>
-              <TableCell>{order.phone}</TableCell>
-              <TableCell>
-                <OrderStatus variant={order.status} />
+          {orders.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={7} className="text-center text-gray-400 py-16">
+                No orders yet.
               </TableCell>
-              <TableCell>${order.totalAmount}</TableCell>
-              <TableCell>{order.createdAt.toLocaleDateString()}</TableCell>
             </TableRow>
-          ))}
+          ) : (
+            orders.map((order) => (
+              <TableRow key={order.id}>
+                <TableCell>{order.id}</TableCell>
+                <TableCell>{order.fullName}</TableCell>
+                <TableCell>{order.email}</TableCell>
+                <TableCell>{order.phone}</TableCell>
+                <TableCell>
+                  <OrderStatus variant={order.status} />
+                </TableCell>
+                <TableCell>${order.totalAmount.toFixed(2)}</TableCell>
+                <TableCell>{order.createdAt.toLocaleDateString()}</TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
     </div>
