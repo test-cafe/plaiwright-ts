@@ -37,7 +37,7 @@ export default async function OrdersPage() {
             <OrderItem
               key={order.id}
               id={order.id}
-              items={order.items ? JSON.parse(order.items as string) : []}
+              items={Array.isArray(order.items) ? order.items : order.items ? JSON.parse(order.items as string) : []}
               createdAt={order.createdAt.toLocaleDateString('en-US', {
                 day: 'numeric',
                 month: 'long',
