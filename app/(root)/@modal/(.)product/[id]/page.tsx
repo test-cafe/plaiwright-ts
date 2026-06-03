@@ -12,7 +12,7 @@ export default async function PhotoModal({ params }: { params: Promise<{ id: str
       ingredients: true,
       items: {
         orderBy: {
-          createdAt: 'desc',
+          price: 'asc',
         },
         include: {
           product: {

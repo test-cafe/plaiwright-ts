@@ -39,7 +39,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       },
       items: {
         orderBy: {
-          createdAt: 'desc',
+          price: 'asc',
         },
         include: {
           product: {
