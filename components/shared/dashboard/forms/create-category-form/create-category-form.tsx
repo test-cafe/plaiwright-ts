@@ -34,8 +34,11 @@ export const CreateCategoryForm: React.FC<Props> = ({ values }) => {
 
       if (params.id) {
         await updateCategory(+params.id, data);
+        toast.success('Category updated');
+        router.push('/dashboard/categories');
       } else {
         await createCategory(data);
+        toast.success('Category created');
         router.push('/dashboard/categories');
       }
 

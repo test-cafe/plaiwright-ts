@@ -26,16 +26,17 @@ export const ProductsGroupList: React.FC<Props> = ({
   prioritizeFirst,
 }) => {
   const setActiveId = useCategoryStore((state) => state.setActiveId);
+  const locked = useCategoryStore((state) => state.locked);
   const intersectionRef = React.useRef(null);
   const intersection = useIntersection(intersectionRef, {
-    threshold: 0.4,
+    threshold: 0.1,
   });
 
   React.useEffect(() => {
-    if (intersection?.isIntersecting) {
+    if (intersection?.isIntersecting && !locked) {
       setActiveId(categoryId);
     }
-  }, [intersection?.isIntersecting]);
+  }, [intersection?.isIntersecting, locked]);
 
   return (
     <div className={className} id={title}>
