@@ -14,6 +14,7 @@ import { AuthModal } from './modals/auth-modal';
 import { ProfileButton } from './profile-button';
 import { useRouter, useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { useCartStore } from '@/store/cart';
 
 interface Props {
   hasSearch?: boolean;
@@ -27,6 +28,7 @@ export const Header: React.FC<Props> = ({ className, hasSearch = true, hasCart =
   const mobileSearchRef = React.useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
   const router = useRouter();
+  const fetchCartItems = useCartStore((state) => state.fetchCartItems);
 
   useClickAway(mobileSearchRef, () => setMobileSearchOpen(false));
 
@@ -39,6 +41,7 @@ export const Header: React.FC<Props> = ({ className, hasSearch = true, hasCart =
 
     if (searchParams.has('paid')) {
       toastMessage = 'Order paid successfully! Confirmation sent to your email.';
+      fetchCartItems();
     }
 
     if (toastMessage) {
