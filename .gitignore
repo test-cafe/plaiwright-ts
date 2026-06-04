@@ -20,6 +20,8 @@
 .DS_Store
 *.pem
 next-pizza-loom-script*.md
+figma-prompt.md
+interview-prep.md
 
 # debug
 npm-debug.log*
