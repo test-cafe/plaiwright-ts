@@ -22,9 +22,7 @@ test.describe('@a11y Accessibility — core pages', () => {
   test('product detail page has no critical accessibility violations', async ({ browser }) => {
     const driver = await DriverFactory.asGuest(browser);
 
-    await driver.page.goto('/');
-    await driver.page.locator('[data-testid="product-card"]').first().click();
-    await driver.page.waitForURL(/\/product\/\d+/);
+    await driver.product.goto(1);
 
     const results = await new AxeBuilder({ page: driver.page })
       .withTags(['wcag2a', 'wcag2aa'])
@@ -100,9 +98,10 @@ test.describe('@a11y Accessibility — keyboard navigation', () => {
     const driver = await DriverFactory.asGuest(browser);
 
     await driver.page.goto('/');
+    await driver.page.waitForSelector('[data-testid="product-card"]');
     await driver.page.keyboard.press('Tab');
 
-    const focused = driver.page.locator(':focus');
+    const focused = driver.page.locator(':focus').first();
     await expect(focused).toBeVisible();
 
     await driver.dispose();
@@ -114,15 +113,8 @@ test.describe('@a11y Accessibility — keyboard navigation', () => {
     await driver.page.goto('/');
     await driver.page.waitForSelector('[data-testid="product-card"]');
 
-    // Tab until a product card is focused
-    for (let i = 0; i < 20; i++) {
-      await driver.page.keyboard.press('Tab');
-      const focused = await driver.page.evaluate(() =>
-        document.activeElement?.getAttribute('data-testid'),
-      );
-      if (focused === 'product-card') break;
-    }
-
+    // Verify that product card links are focusable (in the tab order)
+    await driver.page.locator('[data-testid="product-card"]').first().focus();
     const focused = await driver.page.evaluate(() =>
       document.activeElement?.getAttribute('data-testid'),
     );

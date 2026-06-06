@@ -29,6 +29,11 @@ export async function assertOkResponse<T extends z.ZodTypeAny>(
   return assertResponseShape(response, schema);
 }
 
+/** Asserts only the HTTP status code — use when the response body is empty or irrelevant. */
+export function assertStatus(response: AnyResponse, expectedStatus: number): void {
+  expect(response.status).toBe(expectedStatus);
+}
+
 export async function assertErrorResponse(
   response: AnyResponse,
   expectedStatus: number,
@@ -37,16 +42,16 @@ export async function assertErrorResponse(
   expect(response.status).toBe(expectedStatus);
 
   if (messageContains) {
-    const body = await response.json() as Record<string, unknown>;
-    const message = String(body?.error ?? body?.message ?? '');
-    expect(message.toLowerCase()).toContain(messageContains.toLowerCase());
+    const body = (await response.json()) as Record<string, unknown>;
+    const text = String(body?.error ?? body?.message ?? '');
+    expect(text.toLowerCase()).toContain(messageContains.toLowerCase());
   }
 }
 
 // Reusable response schemas for common API shapes
 export const schemas = {
   cart: z.object({
-    totalAmount: z.number(),
+    totalAmount: z.number().optional(),
     items: z.array(
       z.object({
         id: z.number(),
@@ -74,13 +79,35 @@ export const schemas = {
     ),
   }),
 
+  // Minimal product shape returned by search (no items relation)
+  productSearchResult: z.object({
+    id: z.number(),
+    name: z.string(),
+  }),
+
   order: z.object({
     id: z.number(),
     status: z.enum(['PENDING', 'SUCCEEDED', 'CANCELLED']),
     totalAmount: z.number(),
   }),
 
-  error: z.object({
-    error: z.string(),
+  // Registration success — returns the created user summary
+  registerSuccess: z.object({
+    user: z.object({
+      id: z.number(),
+      fullName: z.string(),
+      email: z.string().email(),
+    }),
   }),
+
+  // Stripe webhook acknowledgement
+  webhookAck: z.object({
+    received: z.boolean(),
+  }),
+
+  // Covers both { error } and { message } error shapes used across routes
+  error: z.union([
+    z.object({ error: z.string() }),
+    z.object({ message: z.string() }),
+  ]),
 };

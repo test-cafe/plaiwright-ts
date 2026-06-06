@@ -20,7 +20,13 @@ export class ProductPage {
   }
 
   async addToCart() {
-    await this.page.locator('[data-testid="add-to-cart"]').click();
+    await Promise.all([
+      this.page.waitForResponse(
+        (resp) => resp.url().includes('/api/cart') && resp.request().method() === 'POST' && resp.status() === 200,
+        { timeout: 8000 },
+      ),
+      this.page.locator('[data-testid="add-to-cart"]').click(),
+    ]);
   }
 
   async getPrice(): Promise<number> {

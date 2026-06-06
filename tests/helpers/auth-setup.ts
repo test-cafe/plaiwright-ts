@@ -1,4 +1,5 @@
 import { vi } from 'vitest';
+import type { Mock } from 'vitest';
 import type { Session } from 'next-auth';
 
 export const mockAdminSession: Session = {
@@ -21,20 +22,23 @@ export const mockUserSession: Session = {
   expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
 };
 
+// Convenience: the `user` sub-object returned by getUserSession() directly
+export const mockAdminUser = mockAdminSession.user!;
+export const mockRegularUser = mockUserSession.user!;
+
 /**
- * Mocks next-auth getServerSession to return the provided session.
- * Call this in beforeEach to simulate an authenticated user.
+ * Sets the resolved value on a mock function (e.g. vi.mocked(getUserSession)).
+ *
+ * Usage — declare the mock at module level, then call setSession in beforeEach:
+ *   vi.mock('@/lib/get-user-session', () => ({ getUserSession: vi.fn() }));
+ *   import { getUserSession } from '@/lib/get-user-session';
+ *
+ *   beforeEach(() => setSession(vi.mocked(getUserSession), mockRegularUser));
  */
-export function mockSession(session: Session | null) {
-  vi.mock('next-auth', async (importOriginal) => {
-    const actual = await importOriginal<typeof import('next-auth')>();
-    return {
-      ...actual,
-      getServerSession: vi.fn().mockResolvedValue(session),
-    };
-  });
+export function setSession(mockFn: Mock, value: unknown): void {
+  mockFn.mockResolvedValue(value);
 }
 
-export function mockUnauthenticated() {
-  mockSession(null);
+export function clearSession(mockFn: Mock): void {
+  mockFn.mockResolvedValue(null);
 }

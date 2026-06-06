@@ -62,7 +62,7 @@ export const Header: React.FC<Props> = ({ className, hasSearch = true, hasCart =
             <Image src="/logo.png" width={35} height={35} alt="Logo" />
             <div>
               <h1 className="text-2xl uppercase font-black">Next Pizza</h1>
-              <p className="text-sm text-gray-400 leading-3 hidden sm:block">it doesn't get any tastier</p>
+              <p className="text-sm text-gray-600 leading-3 hidden sm:block">it doesn't get any tastier</p>
             </div>
           </div>
         </Link>

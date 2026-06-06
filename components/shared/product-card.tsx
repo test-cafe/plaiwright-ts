@@ -32,7 +32,7 @@ export const ProductCard: React.FC<Props> = ({ id, name, price, imageUrl, ingred
           />
           <div className="flex-1 min-w-0">
             <Title text={name} size="sm" className="font-bold mb-1 leading-tight" />
-            <p className="text-xs text-gray-400 line-clamp-2 mb-2">
+            <p className="text-xs text-gray-600 line-clamp-2 mb-2">
               {ingredients?.map((i) => i.name).join(', ') || ''}
             </p>
             <div className="flex items-center justify-between gap-2">
@@ -60,7 +60,7 @@ export const ProductCard: React.FC<Props> = ({ id, name, price, imageUrl, ingred
 
           <Title text={name} size="sm" className="mb-1 mt-3 font-bold" />
 
-          <p className="text-sm text-gray-400 line-clamp-2">
+          <p className="text-sm text-gray-600 line-clamp-2">
             {ingredients?.map((i) => i.name).join(', ') || ''}
           </p>
 

@@ -4,7 +4,7 @@ export class AuthPage {
   constructor(private page: Page) {}
 
   async openAuthModal() {
-    await this.page.locator('[data-testid="auth-button"]').click();
+    await this.page.locator('[data-testid="sign-in-button"]').click();
     await expect(this.page.locator('[data-testid="auth-modal"]')).toBeVisible();
   }
 
@@ -39,6 +39,6 @@ export class AuthPage {
   }
 
   async assertLoggedOut() {
-    await expect(this.page.locator('[data-testid="auth-button"]')).toBeVisible();
+    await expect(this.page.locator('[data-testid="sign-in-button"]')).toBeVisible();
   }
 }

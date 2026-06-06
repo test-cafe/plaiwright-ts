@@ -38,7 +38,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                 <div className="flex flex-col items-center justify-center py-20 text-center">
                   <p className="text-6xl mb-4">🍕</p>
                   <Title text="No pizzas found" size="md" className="font-bold mb-2" />
-                  <p className="text-gray-400 mb-6">Try adjusting your filters or search query</p>
+                  <p className="text-gray-600 mb-6">Try adjusting your filters or search query</p>
                   <Link
                     href="/"
                     className="text-primary font-semibold hover:underline">
@@ -65,7 +65,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
               <Suspense fallback={null}>
                 <Pagination pageCount={meta.pageCount} currentPage={meta.currentPage} />
               </Suspense>
-              <span className="text-sm text-gray-400">{meta.currentPage} of {meta.pageCount}</span>
+              <span className="text-sm text-gray-600">{meta.currentPage} of {meta.pageCount}</span>
             </div>
           </div>
         </div>

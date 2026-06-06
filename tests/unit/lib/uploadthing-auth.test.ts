@@ -4,12 +4,16 @@ import { UploadThingError } from 'uploadthing/server';
 
 vi.mock('@/lib/get-user-session');
 
-// Mirrors the imageUploader middleware in app/api/uploadthing/core.ts
-async function runMiddleware() {
-  const user = await getUserSession();
-  if (!user) throw new UploadThingError('Unauthorized');
-  return { userId: user.id };
-}
+vi.mock('uploadthing/next', () => ({
+  createUploadthing: vi.fn(() =>
+    vi.fn(() => ({
+      middleware: vi.fn().mockReturnThis(),
+      onUploadComplete: vi.fn().mockReturnThis(),
+    })),
+  ),
+}));
+
+import { imageUploaderMiddleware } from '@/app/api/uploadthing/core';
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -19,13 +23,13 @@ describe('UploadThing imageUploader — auth middleware', () => {
   it('throws Unauthorized when no session exists', async () => {
     vi.mocked(getUserSession).mockResolvedValue(null);
 
-    await expect(runMiddleware()).rejects.toThrow('Unauthorized');
+    await expect(imageUploaderMiddleware()).rejects.toThrow('Unauthorized');
   });
 
   it('throws a UploadThingError for unauthenticated requests', async () => {
     vi.mocked(getUserSession).mockResolvedValue(null);
 
-    await expect(runMiddleware()).rejects.toBeInstanceOf(UploadThingError);
+    await expect(imageUploaderMiddleware()).rejects.toBeInstanceOf(UploadThingError);
   });
 
   it('returns userId metadata for authenticated USER-role user', async () => {
@@ -36,7 +40,7 @@ describe('UploadThing imageUploader — auth middleware', () => {
       name: 'Regular User',
     } as any);
 
-    await expect(runMiddleware()).resolves.toEqual({ userId: '7' });
+    await expect(imageUploaderMiddleware()).resolves.toEqual({ userId: '7' });
   });
 
   it('returns userId metadata for authenticated ADMIN-role user', async () => {
@@ -47,6 +51,6 @@ describe('UploadThing imageUploader — auth middleware', () => {
       name: 'Admin',
     } as any);
 
-    await expect(runMiddleware()).resolves.toEqual({ userId: '1' });
+    await expect(imageUploaderMiddleware()).resolves.toEqual({ userId: '1' });
   });
 });

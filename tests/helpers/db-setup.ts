@@ -1,17 +1,17 @@
 import { prisma } from '@/lib/prisma';
-import { afterEach, afterAll } from 'vitest';
+import { afterAll } from 'vitest';
 
 /**
  * Uses the app singleton (lib/prisma.ts) so tests share the same Prisma
  * instance — including the pagination() extension — as production code.
  *
- * Isolation strategy: Prisma's connection pool doesn't guarantee the same
- * underlying connection across calls, so raw BEGIN/ROLLBACK is unreliable.
- * Instead, each test file cleans up its own data in afterEach using known
- * identifiers (emails ending in @test.com, tokenIds prefixed with "test-").
+ * Isolation strategy: call cleanDb() in beforeEach to wipe all tables in
+ * FK-safe order before each test. The test:integration script enforces
+ * maxForks=1 so DB test files never run concurrently.
  *
- * For fully isolated transaction-scoped tests, use prisma.$transaction()
- * directly inside the test body.
+ * Prisma's connection pool doesn't guarantee the same underlying connection
+ * across calls, so raw BEGIN/ROLLBACK is unreliable — full truncation is used
+ * instead.
  */
 export function useTestDb() {
   afterAll(async () => {
@@ -19,6 +19,26 @@ export function useTestDb() {
   });
 
   return prisma;
+}
+
+/**
+ * Wipes all tables in FK-safe order. Call in beforeEach for DB integration tests.
+ * Delete order: children before parents, M2M join tables are implicit (handled
+ * by Prisma when the owning side is deleted).
+ */
+export async function cleanDb() {
+  await prisma.cartItem.deleteMany();
+  await prisma.verificationCode.deleteMany();
+  await prisma.passwordResetToken.deleteMany();
+  await prisma.order.deleteMany();
+  await prisma.cart.deleteMany();
+  await prisma.user.deleteMany();
+  await prisma.productItem.deleteMany();
+  await prisma.ingredient.deleteMany();
+  await prisma.product.deleteMany();
+  await prisma.category.deleteMany();
+  await prisma.storyItem.deleteMany();
+  await prisma.story.deleteMany();
 }
 
 export { prisma as testPrisma };

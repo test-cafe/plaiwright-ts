@@ -65,7 +65,7 @@ export const ChoosePizzaForm: React.FC<Props> = ({
       <div className="w-full md:w-[490px] bg-[#FCFCFC] p-4 md:p-7">
         <Title text={name} size="md" className="font-extrabold mb-1" />
 
-        <p className="text-gray-400">{textDetaills}</p>
+        <p className="text-gray-600">{textDetaills}</p>
 
         <PizzaSelector
           pizzaSizes={availablePizzaSizes}

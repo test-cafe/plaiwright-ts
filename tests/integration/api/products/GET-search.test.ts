@@ -1,8 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET } from '@/app/api/products/search/route';
-import { NextRequest } from 'next/server';
 import { searchPayloads } from '@/tests/fixtures/api/auth-payloads';
 import { prisma } from '@/lib/prisma';
+import { z } from 'zod';
+import { request } from '@/tests/helpers/api-builder';
+import { urls } from '@/tests/helpers/url-builder';
+import { assertOkResponse } from '@/tests/helpers/response-validator';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
@@ -12,8 +15,9 @@ vi.mock('@/lib/prisma', () => ({
   },
 }));
 
-const makeRequest = (query: string) =>
-  new NextRequest(`http://localhost:3000/api/products/search?query=${encodeURIComponent(query)}`);
+vi.mock('@/lib/logger', () => ({
+  logger: { trace: vi.fn(), debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn(), fatal: vi.fn(), child: vi.fn() },
+}));
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -21,37 +25,46 @@ beforeEach(() => {
 });
 
 describe('GET /api/products/search', () => {
-  // DDT: various query string inputs including XSS and SQL injection
+  // DDT: verifies status codes for various query strings including XSS and SQL injection
   it.each(searchPayloads)(
     '$query → status $expectedStatus',
     async ({ query, expectedStatus }) => {
-      const response = await GET(makeRequest(query));
+      const response = await GET(request.get(urls.products(query)).build());
       expect(response.status).toBe(expectedStatus);
     },
   );
 
   it('passes query to Prisma with contains filter (case-insensitive)', async () => {
-    await GET(makeRequest('pepperoni'));
+    await GET(request.get(urls.products('pepperoni')).build());
 
     expect(prisma.product.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          name: expect.objectContaining({
-            contains: 'pepperoni',
-          }),
+          name: expect.objectContaining({ contains: 'pepperoni' }),
         }),
       }),
     );
   });
 
-  it('returns JSON array', async () => {
+  it('returns a JSON array of matching products', async () => {
     vi.mocked(prisma.product.findMany).mockResolvedValue([
-      { id: 1, name: 'Pepperoni', imageUrl: '', categoryId: 1, createdAt: new Date(), updatedAt: new Date() },
+      {
+        id: 1,
+        name: 'Pepperoni',
+        imageUrl: '',
+        categoryId: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     ]);
 
-    const response = await GET(makeRequest('pepperoni'));
-    const body = await response.json();
+    const response = await GET(request.get(urls.products('pepperoni')).build());
+    const body = await assertOkResponse(
+      response,
+      z.array(z.object({ id: z.number(), name: z.string() })),
+    );
 
-    expect(Array.isArray(body)).toBe(true);
+    expect(body).toHaveLength(1);
+    expect(body[0].name).toBe('Pepperoni');
   });
 });

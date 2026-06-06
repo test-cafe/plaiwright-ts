@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { useTestDb } from '@/tests/helpers/db-setup';
+import { useTestDb, cleanDb } from '@/tests/helpers/db-setup';
 import { createProductFactory } from '@/tests/fixtures/db/products';
 import { createCartFactory } from '@/tests/fixtures/db/cart';
 
@@ -8,13 +8,7 @@ const productFactory = createProductFactory(prisma as any);
 const cartFactory = createCartFactory(prisma as any);
 
 beforeEach(async () => {
-  await prisma.cartItem.deleteMany();
-  await prisma.cart.deleteMany();
-  await prisma.productItem.deleteMany();
-  await prisma.ingredient.deleteMany();
-  await prisma.product.deleteMany();
-  await prisma.category.deleteMany();
-  await prisma.user.deleteMany({ where: { email: { contains: '@test.com' } } });
+  await cleanDb();
 });
 
 describe('Cart DB — concurrent quantity updates', () => {

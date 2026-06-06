@@ -1,27 +1,22 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET } from '@/app/api/cart/route';
-import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
+import { getUserSession } from '@/lib/get-user-session';
+import { request } from '@/tests/helpers/api-builder';
+import { urls } from '@/tests/helpers/url-builder';
+import { assertOkResponse, schemas } from '@/tests/helpers/response-validator';
+import { setSession, clearSession } from '@/tests/helpers/auth-setup';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
-    cart: {
-      findFirst: vi.fn(),
-    },
+    user: { findUnique: vi.fn() },
+    cart: { findFirst: vi.fn() },
   },
 }));
 
-vi.mock('next-auth', () => ({
-  getServerSession: vi.fn(),
+vi.mock('@/lib/get-user-session', () => ({
+  getUserSession: vi.fn(),
 }));
-
-const makeRequest = (cookieToken?: string, headerToken?: string) => {
-  const headers = new Headers();
-  if (headerToken) headers.set('x-cart-token', headerToken);
-  if (cookieToken) headers.set('cookie', `cartToken=${cookieToken}`);
-  return new NextRequest('http://localhost:3000/api/cart', { headers });
-};
 
 const mockCart = {
   id: 1,
@@ -35,20 +30,19 @@ const mockCart = {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.mocked(getServerSession).mockResolvedValue(null);
+  clearSession(vi.mocked(getUserSession));
 });
 
 describe('GET /api/cart', () => {
   it('returns cart by cookie cartToken for anonymous user', async () => {
     vi.mocked(prisma.cart.findFirst).mockResolvedValue(mockCart as any);
 
-    const response = await GET(makeRequest('test-token'));
-    const body = await response.json();
+    const response = await GET(request.get(urls.cart()).cartToken('test-token').build());
 
-    expect(response.status).toBe(200);
+    await assertOkResponse(response, schemas.cart);
     expect(prisma.cart.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: expect.objectContaining({ tokenId: 'test-token' }),
+        where: { OR: expect.arrayContaining([{ tokenId: 'test-token' }]) },
       }),
     );
   });
@@ -56,27 +50,29 @@ describe('GET /api/cart', () => {
   it('returns cart by x-cart-token header (mobile)', async () => {
     vi.mocked(prisma.cart.findFirst).mockResolvedValue(mockCart as any);
 
-    const response = await GET(makeRequest(undefined, 'mobile-token'));
-    expect(response.status).toBe(200);
+    const response = await GET(
+      request.get(urls.cart()).header('x-cart-token', 'mobile-token').build(),
+    );
+
+    await assertOkResponse(response, schemas.cart);
   });
 
   it('returns cart by userId for authenticated user', async () => {
-    vi.mocked(getServerSession).mockResolvedValue({
-      user: { id: '5', email: 'user@test.com' },
-    } as any);
-    vi.mocked(prisma.cart.findFirst).mockResolvedValue({ ...mockCart, userId: 5 } as any);
+    setSession(vi.mocked(getUserSession), { id: '2', email: 'user@test.com', role: 'USER' } as any);
+    vi.mocked(prisma.user.findUnique as any).mockResolvedValue({ id: 2 });
+    vi.mocked(prisma.cart.findFirst).mockResolvedValue({ ...mockCart, userId: 2 } as any);
 
-    const response = await GET(makeRequest());
-    expect(response.status).toBe(200);
+    const response = await GET(request.get(urls.cart()).build());
+
+    await assertOkResponse(response, schemas.cart);
   });
 
   it('returns empty items array when no cart found', async () => {
     vi.mocked(prisma.cart.findFirst).mockResolvedValue(null);
 
-    const response = await GET(makeRequest('unknown-token'));
-    const body = await response.json();
+    const response = await GET(request.get(urls.cart()).cartToken('unknown-token').build());
+    const body = await assertOkResponse(response, schemas.cart);
 
-    expect(response.status).toBe(200);
     expect(body.items).toEqual([]);
   });
 });

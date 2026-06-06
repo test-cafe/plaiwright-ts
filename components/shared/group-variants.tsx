@@ -26,11 +26,12 @@ export const GroupVariants: React.FC<Props> = ({ items, onClick, className, sele
           key={item.name}
           data-testid={testIdPrefix}
           onClick={() => onClick?.(item.value)}
+          aria-disabled={item.disabled || undefined}
           className={cn(
             'flex items-center justify-center cursor-pointer h-[28px] sm:h-[30px] px-2 sm:px-5 flex-1 rounded-3xl transition-all duration-400 text-xs sm:text-sm',
             {
               'bg-white shadow': item.value === selectedValue,
-              'text-gray-500 opacity-50 pointer-events-none': item.disabled,
+              'text-gray-400 opacity-50 pointer-events-none': item.disabled,
             },
           )}>
           {item.name}

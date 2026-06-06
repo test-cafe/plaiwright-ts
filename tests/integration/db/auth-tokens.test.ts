@@ -1,14 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { useTestDb } from '@/tests/helpers/db-setup';
+import { useTestDb, cleanDb } from '@/tests/helpers/db-setup';
 import { createUserFactory } from '@/tests/fixtures/db/users';
 
 const prisma = useTestDb();
 const userFactory = createUserFactory(prisma as any);
 
 beforeEach(async () => {
-  await prisma.passwordResetToken.deleteMany();
-  await prisma.verificationCode.deleteMany();
-  await prisma.user.deleteMany({ where: { email: { contains: '@test.com' } } });
+  await cleanDb();
 });
 
 describe('VerificationCode', () => {

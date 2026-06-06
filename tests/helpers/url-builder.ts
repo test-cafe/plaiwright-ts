@@ -1,4 +1,4 @@
-const BASE = 'http://localhost:3000';
+const BASE = process.env.API_BASE_URL ?? 'http://localhost:3000';
 
 function url(path: string, params?: Record<string, string | number>): string {
   const full = `${BASE}${path}`;
@@ -17,7 +17,9 @@ export const urls = {
   cartCheckoutCallback: () => url('/api/cart/checkout/callback'),
 
   // Auth
+  authMe: () => url('/api/auth/me'),
   authRegister: () => url('/api/auth/register'),
+  authSignin: () => url('/api/auth/signin'),
   authVerify: (code: string) => url('/api/auth/verify', { code }),
   authResetPassword: () => url('/api/auth/reset-password'),
   authForgotPassword: () => url('/api/auth/forgot-password'),

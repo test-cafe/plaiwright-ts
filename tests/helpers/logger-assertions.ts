@@ -1,4 +1,5 @@
 import { vi } from 'vitest';
+import type { Mock } from 'vitest';
 
 export type LogLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
 
@@ -9,19 +10,51 @@ export interface CapturedLog {
 }
 
 /**
- * Replaces the app logger with a spy and returns a handle to inspect captured logs.
+ * Creates a mock logger object. Use inside the vi.mock factory, then import and cast
+ * the mocked module to pass to captureLogger:
  *
- * Usage:
- *   const logs = captureLogger();
- *   // ... call code under test ...
- *   logs.assertLogged('error', 'Unauthorized');
- *   logs.assertNotLogged('info');
+ *   vi.mock('@/lib/logger', () => ({ logger: createMockLogger() }));
+ *   import { logger } from '@/lib/logger';
+ *
+ *   beforeEach(() => {
+ *     vi.clearAllMocks();
+ *     logs = captureLogger(logger as unknown as MockLogger);
+ *   });
  */
-export function captureLogger() {
+export function createMockLogger() {
+  return {
+    trace: vi.fn(),
+    debug: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    fatal: vi.fn(),
+    child: vi.fn().mockReturnThis(),
+  };
+}
+
+export type MockLogger = ReturnType<typeof createMockLogger>;
+
+/**
+ * Wires capture on a pre-established mock logger and returns an inspection handle.
+ * Call this in beforeEach *after* vi.clearAllMocks() to re-wire the implementations.
+ *
+ *   const loggerMock = vi.hoisted(() => createMockLogger());
+ *   vi.mock('@/lib/logger', () => ({ logger: loggerMock }));
+ *
+ *   let logs: ReturnType<typeof captureLogger>;
+ *   beforeEach(() => {
+ *     vi.clearAllMocks();
+ *     logs = captureLogger(loggerMock);
+ *   });
+ */
+export function captureLogger(mockLogger: MockLogger) {
   const captured: CapturedLog[] = [];
 
-  const makeMethod = (level: LogLevel) =>
-    vi.fn((...args: unknown[]) => {
+  const levels: LogLevel[] = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'];
+
+  for (const level of levels) {
+    (mockLogger[level] as Mock).mockImplementation((...args: unknown[]) => {
       const [msgOrObj, msg] = args;
       if (typeof msgOrObj === 'string') {
         captured.push({ level, msg: msgOrObj });
@@ -29,18 +62,7 @@ export function captureLogger() {
         captured.push({ level, msg: String(msg ?? ''), ...(msgOrObj as object) });
       }
     });
-
-  const mockLogger = {
-    trace: makeMethod('trace'),
-    debug: makeMethod('debug'),
-    info: makeMethod('info'),
-    warn: makeMethod('warn'),
-    error: makeMethod('error'),
-    fatal: makeMethod('fatal'),
-    child: vi.fn().mockReturnThis(),
-  };
-
-  vi.mock('@/lib/logger', () => ({ logger: mockLogger }));
+  }
 
   return {
     all: captured,

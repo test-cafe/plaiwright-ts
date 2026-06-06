@@ -1,8 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { POST } from '@/app/api/cart/route';
-import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
+import { getUserSession } from '@/lib/get-user-session';
+import { request } from '@/tests/helpers/api-builder';
+import { urls } from '@/tests/helpers/url-builder';
+import { assertOkResponse, schemas } from '@/tests/helpers/response-validator';
+import { clearSession } from '@/tests/helpers/auth-setup';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
@@ -14,24 +17,16 @@ vi.mock('@/lib/prisma', () => ({
   },
 }));
 
-vi.mock('next-auth', () => ({
-  getServerSession: vi.fn(),
+vi.mock('@/lib/get-user-session', () => ({
+  getUserSession: vi.fn(),
 }));
 
-const makePostRequest = (body: object, cookieToken = 'test-token') =>
-  new NextRequest('http://localhost:3000/api/cart', {
-    method: 'POST',
-    body: JSON.stringify(body),
-    headers: {
-      'Content-Type': 'application/json',
-      cookie: `cartToken=${cookieToken}`,
-    },
-  });
+const TOKEN = 'test-token';
 
 const mockCart = {
   id: 1,
   totalAmount: 0,
-  tokenId: 'test-token',
+  tokenId: TOKEN,
   userId: null,
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -50,9 +45,12 @@ const makeCartWithItems = (items: any[]) => ({
   items,
 });
 
+const postCart = (body: object) =>
+  request.post(urls.cart()).json(body).cartToken(TOKEN).build();
+
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.mocked(getServerSession).mockResolvedValue(null);
+  clearSession(vi.mocked(getUserSession));
   vi.mocked(prisma.$executeRaw as any).mockResolvedValue(1);
 });
 
@@ -73,15 +71,14 @@ describe('POST /api/cart — ingredient handling', () => {
       .mockResolvedValueOnce(mockCart)
       .mockResolvedValueOnce(cartWithItem)
       .mockResolvedValueOnce(cartWithItem);
-
     vi.mocked(prisma.cartItem.findFirst as any).mockResolvedValue(null);
     vi.mocked(prisma.cartItem.create as any).mockResolvedValue({ id: 1 });
 
     const response = await POST(
-      makePostRequest({ productItemId: 10, quantity: 1, ingredientsIds: [2], pizzaSize: 25, type: 1 }),
+      postCart({ productItemId: 10, quantity: 1, ingredientsIds: [2], pizzaSize: 25, type: 1 }),
     );
 
-    expect(response.status).toBe(200);
+    await assertOkResponse(response, schemas.cart);
     expect(prisma.cartItem.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
@@ -110,11 +107,10 @@ describe('POST /api/cart — ingredient handling', () => {
       .mockResolvedValueOnce(mockCart)
       .mockResolvedValueOnce(cartWithItem)
       .mockResolvedValueOnce(cartWithItem);
-
     vi.mocked(prisma.cartItem.findFirst as any).mockResolvedValue(null);
     vi.mocked(prisma.cartItem.create as any).mockResolvedValue({ id: 2 });
 
-    await POST(makePostRequest({ productItemId: 10, quantity: 1, ingredientsIds: [3, 4] }));
+    await POST(postCart({ productItemId: 10, quantity: 1, ingredientsIds: [3, 4] }));
 
     expect(prisma.cartItem.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -139,35 +135,30 @@ describe('POST /api/cart — ingredient handling', () => {
       .mockResolvedValueOnce(mockCart)
       .mockResolvedValueOnce(makeCartWithItems([{ ...existingItem, quantity: 3 }]))
       .mockResolvedValueOnce(makeCartWithItems([{ ...existingItem, quantity: 3 }]));
-
     vi.mocked(prisma.cartItem.findFirst as any).mockResolvedValue(existingItem);
     vi.mocked(prisma.cartItem.update as any).mockResolvedValue({ ...existingItem, quantity: 3 });
 
-    await POST(makePostRequest({ productItemId: 10, quantity: 1, ingredientsIds: [2] }));
+    await POST(postCart({ productItemId: 10, quantity: 1, ingredientsIds: [2] }));
 
     expect(prisma.cartItem.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: 1 },
-        data: { quantity: 3 },
-      }),
+      expect.objectContaining({ where: { id: 1 }, data: { quantity: 3 } }),
     );
     expect(prisma.cartItem.create).not.toHaveBeenCalled();
   });
 
-  it('creates a separate item when productItemId matches but no ingredients provided', async () => {
+  it('creates a separate item when no ingredients provided', async () => {
     const emptyCart = makeCartWithItems([]);
 
     vi.mocked(prisma.cart.findFirst as any)
       .mockResolvedValueOnce(mockCart)
       .mockResolvedValueOnce(emptyCart)
       .mockResolvedValueOnce(emptyCart);
-
     vi.mocked(prisma.cartItem.findFirst as any).mockResolvedValue(null);
     vi.mocked(prisma.cartItem.create as any).mockResolvedValue({ id: 3 });
 
-    const response = await POST(makePostRequest({ productItemId: 10, quantity: 1 }));
+    const response = await POST(postCart({ productItemId: 10, quantity: 1 }));
 
-    expect(response.status).toBe(200);
+    await assertOkResponse(response, schemas.cart);
     expect(prisma.cartItem.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ productItemId: 10, quantity: 1 }),
@@ -182,13 +173,11 @@ describe('POST /api/cart — ingredient handling', () => {
       .mockResolvedValueOnce(mockCart)
       .mockResolvedValueOnce(emptyCart)
       .mockResolvedValueOnce(emptyCart);
-
     vi.mocked(prisma.cartItem.findFirst as any).mockResolvedValue(null);
     vi.mocked(prisma.cartItem.create as any).mockResolvedValue({ id: 4 });
 
-    const response = await POST(makePostRequest({ productItemId: 10, quantity: 1 }));
+    const response = await POST(postCart({ productItemId: 10, quantity: 1 }));
 
-    const setCookie = response.headers.get('set-cookie');
-    expect(setCookie).toContain('cartToken');
+    expect(response.headers.get('set-cookie')).toContain('cartToken');
   });
 });

@@ -1,8 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { POST } from '@/app/api/cart/checkout/callback/route';
-import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendEmail } from '@/lib/send-email';
+import { request } from '@/tests/helpers/api-builder';
+import { urls } from '@/tests/helpers/url-builder';
+import { assertStatus } from '@/tests/helpers/response-validator';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
@@ -17,7 +19,6 @@ vi.mock('@/lib/send-email', () => ({
   sendEmail: vi.fn(),
 }));
 
-// vi.hoisted ensures mockConstructEvent is defined before the vi.mock factory runs
 const mockConstructEvent = vi.hoisted(() => vi.fn());
 
 vi.mock('stripe', () => ({
@@ -26,12 +27,8 @@ vi.mock('stripe', () => ({
   }),
 }));
 
-const makeWebhookRequest = (body: string, signature = 'valid-sig') =>
-  new NextRequest('http://localhost:3000/api/cart/checkout/callback', {
-    method: 'POST',
-    body,
-    headers: { 'stripe-signature': signature },
-  });
+const webhookRequest = (body = '{}', signature = 'valid-sig') =>
+  request.post(urls.cartCheckoutCallback()).stripeSignature(signature).body(body).build();
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -46,9 +43,9 @@ describe('POST /api/cart/checkout/callback — payment cancellation', () => {
       data: { object: { metadata: { order_id: '42' } } },
     });
 
-    const response = await POST(makeWebhookRequest('{}'));
+    const response = await POST(webhookRequest());
 
-    expect(response.status).toBe(200);
+    assertStatus(response, 200);
     expect(prisma.order.update).not.toHaveBeenCalled();
     expect(sendEmail).not.toHaveBeenCalled();
   });
@@ -59,9 +56,9 @@ describe('POST /api/cart/checkout/callback — payment cancellation', () => {
       data: { object: { metadata: { order_id: '42' } } },
     });
 
-    const response = await POST(makeWebhookRequest('{}'));
+    const response = await POST(webhookRequest());
 
-    expect(response.status).toBe(200);
+    assertStatus(response, 200);
     expect(prisma.order.update).not.toHaveBeenCalled();
     expect(sendEmail).not.toHaveBeenCalled();
   });
@@ -72,7 +69,7 @@ describe('POST /api/cart/checkout/callback — payment cancellation', () => {
       data: { object: { metadata: { order_id: '42' } } },
     });
 
-    await POST(makeWebhookRequest('{}'));
+    await POST(webhookRequest());
 
     expect(prisma.order.findFirst).not.toHaveBeenCalled();
   });
@@ -86,13 +83,11 @@ describe('POST /api/cart/checkout/callback — payment cancellation', () => {
 
     for (const eventType of cancelEvents) {
       vi.clearAllMocks();
-      mockConstructEvent.mockReturnValue({
-        type: eventType,
-        data: { object: {} },
-      });
+      mockConstructEvent.mockReturnValue({ type: eventType, data: { object: {} } });
 
-      const response = await POST(makeWebhookRequest('{}'));
-      expect(response.status).toBe(200);
+      const response = await POST(webhookRequest());
+
+      assertStatus(response, 200);
       expect(prisma.order.update).not.toHaveBeenCalled();
     }
   });

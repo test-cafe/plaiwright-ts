@@ -10,7 +10,7 @@ class ApiRequest {
   private _cookies: Record<string, string> = {};
 
   constructor(url: string, method: Method) {
-    this._url = url.startsWith('http') ? url : `http://localhost:3000${url}`;
+    this._url = url.startsWith('http') ? url : `${process.env.API_BASE_URL ?? 'http://localhost:3000'}${url}`;
     this._method = method;
   }
 

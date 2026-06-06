@@ -4,15 +4,15 @@ import { UploadThingError } from 'uploadthing/server';
 
 const f = createUploadthing();
 
+export async function imageUploaderMiddleware() {
+  const user = await getUserSession();
+  if (!user) throw new UploadThingError('Unauthorized');
+  return { userId: user.id };
+}
+
 export const ourFileRouter = {
   imageUploader: f({ image: { maxFileSize: '4MB' } })
-    .middleware(async () => {
-      const user = await getUserSession();
-
-      if (!user) throw new UploadThingError('Unauthorized');
-
-      return { userId: user.id };
-    })
+    .middleware(imageUploaderMiddleware)
     .onUploadComplete(async ({ metadata }) => {
       return { uploadedBy: metadata.userId };
     }),

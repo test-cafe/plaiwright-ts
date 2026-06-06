@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { OrderStatus } from '@prisma/client';
-import { useTestDb } from '@/tests/helpers/db-setup';
+import { useTestDb, cleanDb } from '@/tests/helpers/db-setup';
 import { createUserFactory } from '@/tests/fixtures/db/users';
 import { createOrderFactory } from '@/tests/fixtures/db/orders';
 
@@ -9,8 +9,7 @@ const userFactory = createUserFactory(prisma as any);
 const orderFactory = createOrderFactory(prisma as any);
 
 beforeEach(async () => {
-  await prisma.order.deleteMany();
-  await prisma.user.deleteMany({ where: { email: { contains: '@test.com' } } });
+  await cleanDb();
 });
 
 describe('Order DB', () => {
