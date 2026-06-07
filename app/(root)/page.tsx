@@ -7,13 +7,14 @@ import { Stories } from '@/components/shared/stories';
 import { Title } from '@/components/shared/title';
 import { TopBar } from '@/components/shared/top-bar';
 import { GetSearchParams, findPizzas } from '@/lib/find-pizzas';
+import { prismaPizzaRepository } from '@/lib/repositories/prisma-pizza-repository';
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 
 export default async function HomePage({ searchParams }: { searchParams: Promise<GetSearchParams> }) {
   const resolvedParams = await searchParams;
   const [[categoryProducts, meta], stories] = await Promise.all([
-    findPizzas(resolvedParams),
+    findPizzas(resolvedParams, prismaPizzaRepository),
     prisma.story.findMany({ include: { items: true } }),
   ]);
 

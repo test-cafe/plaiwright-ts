@@ -1,4 +1,9 @@
-import { prisma } from '@/lib/prisma';
+import type { CategoryProducts } from '@/@types/prisma';
+import type {
+  PizzaFilter,
+  PizzaQueryResult,
+  PizzaRepository,
+} from '@/lib/repositories/pizza-repository';
 
 export interface GetSearchParams {
   query?: string;
@@ -14,80 +19,50 @@ export interface GetSearchParams {
 
 const DEFAULT_MIN_PRICE = 0;
 const DEFAULT_MAX_PRICE = 100;
-
 const DEFAULT_LIMIT = 12;
 const DEFAULT_PAGE = 1;
 
-export const findPizzas = async (params: GetSearchParams) => {
-  const ingredientsIdArr = params.ingredients?.split(',').map(Number);
-  const pizzaTypes = params.pizzaTypes?.split(',').map(Number);
-  const sizes = params.sizes?.split(',').map(Number);
+function parseIdList(raw: string | undefined): number[] | undefined {
+  return raw?.split(',').map(Number);
+}
 
-  const minPrice = Number(params.priceFrom) || DEFAULT_MIN_PRICE;
-  const maxPrice = Number(params.priceTo) || DEFAULT_MAX_PRICE;
+export function parseSearchParams(params: GetSearchParams): PizzaFilter {
+  return {
+    query: params.query,
+    ingredientIds: parseIdList(params.ingredients),
+    sizes: parseIdList(params.sizes),
+    pizzaTypes: parseIdList(params.pizzaTypes),
+    minPrice: Number(params.priceFrom) || DEFAULT_MIN_PRICE,
+    maxPrice: Number(params.priceTo) || DEFAULT_MAX_PRICE,
+    page: Number(params.page || DEFAULT_PAGE),
+    limit: Number(params.limit || DEFAULT_LIMIT),
+    orderBy: params.sortBy === 'rating' ? 'createdAt-asc' : 'id-desc',
+  };
+}
 
-  const limit = Number(params.limit || DEFAULT_LIMIT);
-  const page = Number(params.page || DEFAULT_PAGE);
-
-  const sortBy = params.sortBy;
-  const productsOrderBy =
-    sortBy === 'rating' ? { createdAt: 'asc' as const } : { id: 'desc' as const };
-
-  const result = await prisma.category
-    .paginate({
-      include: {
-        products: {
-          orderBy: productsOrderBy,
-          where: {
-            name: params.query ? { contains: params.query, mode: 'insensitive' } : undefined,
-            ingredients: ingredientsIdArr
-              ? {
-                  some: {
-                    id: {
-                      in: ingredientsIdArr,
-                    },
-                  },
-                }
-              : undefined,
-            items: {
-              some: {
-                size: sizes ? { in: sizes } : undefined,
-                pizzaType: pizzaTypes ? { in: pizzaTypes } : undefined,
-                price: { lte: maxPrice },
-              },
-              every: {
-                price: { gte: minPrice },
-              },
-            },
-          },
-          include: {
-            ingredients: true,
-            items: {
-              orderBy: {
-                price: 'asc',
-              },
-            },
-          },
-        },
-      },
-    })
-    .withPages({
-      page,
-      limit,
-      includePageCount: true,
+export function sortProductsByPrice(
+  categories: CategoryProducts[],
+  direction: 'cheap' | 'expensive',
+): void {
+  categories.forEach((category) => {
+    category.products.sort((a, b) => {
+      const minA = Math.min(...a.items.map((i) => i.price));
+      const minB = Math.min(...b.items.map((i) => i.price));
+      return direction === 'cheap' ? minA - minB : minB - minA;
     });
+  });
+}
 
-  const [categories, meta] = result;
+export async function findPizzas(
+  params: GetSearchParams,
+  repo: PizzaRepository,
+): Promise<PizzaQueryResult> {
+  const filter = parseSearchParams(params);
+  const [categories, meta] = await repo.findPizzas(filter);
 
-  if (sortBy === 'cheap' || sortBy === 'expensive') {
-    categories.forEach((category) => {
-      category.products.sort((a, b) => {
-        const minA = Math.min(...a.items.map((i) => i.price));
-        const minB = Math.min(...b.items.map((i) => i.price));
-        return sortBy === 'cheap' ? minA - minB : minB - minA;
-      });
-    });
+  if (params.sortBy === 'cheap' || params.sortBy === 'expensive') {
+    sortProductsByPrice(categories, params.sortBy);
   }
 
-  return [categories, meta] as typeof result;
-};
+  return [categories, meta];
+}

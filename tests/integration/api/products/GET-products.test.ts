@@ -4,14 +4,15 @@ import { request } from '@/tests/helpers/api-builder';
 import { urls } from '@/tests/helpers/url-builder';
 import { assertOkResponse } from '@/tests/helpers/response-validator';
 import { z } from 'zod';
+import { findPizzas } from '@/lib/find-pizzas';
+import type { PaginationMeta, PizzaQueryResult } from '@/lib/repositories/pizza-repository';
+import type { CategoryProducts } from '@/@types/prisma';
 
 vi.mock('@/lib/find-pizzas', () => ({
   findPizzas: vi.fn(),
 }));
 
-import { findPizzas } from '@/lib/find-pizzas';
-
-const defaultMeta = {
+const defaultMeta: PaginationMeta = {
   totalCount: 0,
   pageCount: 1,
   currentPage: 1,
@@ -26,7 +27,7 @@ const responseSchema = z.object({
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.mocked(findPizzas).mockResolvedValue([[], defaultMeta] as any);
+  vi.mocked(findPizzas).mockResolvedValue([[], defaultMeta] satisfies PizzaQueryResult);
 });
 
 describe('GET /api/products', () => {
@@ -49,8 +50,8 @@ describe('GET /api/products', () => {
   });
 
   it('returns categories supplied by findPizzas', async () => {
-    const fakeCategory = { id: 1, name: 'Pizzas', products: [] };
-    vi.mocked(findPizzas).mockResolvedValue([[fakeCategory], defaultMeta] as any);
+    const fakeCategory: CategoryProducts = { id: 1, name: 'Pizzas', products: [] };
+    vi.mocked(findPizzas).mockResolvedValue([[fakeCategory], defaultMeta] satisfies PizzaQueryResult);
 
     const response = await GET(request.get(urls.products()).build());
 
@@ -60,7 +61,7 @@ describe('GET /api/products', () => {
   });
 
   it('returns 200 when no products match the filter', async () => {
-    vi.mocked(findPizzas).mockResolvedValue([[], { ...defaultMeta, totalCount: 0 }] as any);
+    vi.mocked(findPizzas).mockResolvedValue([[], { ...defaultMeta, totalCount: 0 }] satisfies PizzaQueryResult);
 
     const response = await GET(request.get(urls.products()).build());
 
