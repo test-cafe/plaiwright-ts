@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { act } from '@testing-library/react';
 import { Api } from '@/services/api-client';
 import { useCartStore } from '@/store/cart';
+import type { CartResponse } from '@/services/dto/cart';
 
 vi.mock('@/services/api-client', () => ({
   Api: {
@@ -21,10 +22,21 @@ vi.mock('@/lib/get-cart-details', () => ({
   })),
 }));
 
-const mockCartResponse = {
-  totalAmount: 699,
-  items: [{ id: 1, quantity: 1 }],
-};
+const CART_TOTAL = 699;
+const PRODUCT_ITEM_ID = 1;
+const ITEM_ID_TO_UPDATE = 5;
+const NEW_QUANTITY = 3;
+const ITEM_ID_TO_REMOVE = 7;
+
+const MOCK_CART = {
+  totalAmount: CART_TOTAL,
+  items: [{ id: PRODUCT_ITEM_ID, quantity: 1 }],
+} as unknown as CartResponse;
+
+const EMPTY_CART = {
+  totalAmount: 0,
+  items: [],
+} as unknown as CartResponse;
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -33,8 +45,8 @@ beforeEach(() => {
 
 describe('useCartStore', () => {
   describe('fetchCartItems', () => {
-    it('sets loading true then false and updates items on success', async () => {
-      vi.mocked(Api.cart.fetchCart).mockResolvedValue(mockCartResponse as any);
+    it('loads cart items from the server', async () => {
+      vi.mocked(Api.cart.fetchCart).mockResolvedValue(MOCK_CART);
 
       await act(async () => {
         await useCartStore.getState().fetchCartItems();
@@ -43,10 +55,10 @@ describe('useCartStore', () => {
       const { loading, error, totalAmount } = useCartStore.getState();
       expect(loading).toBe(false);
       expect(error).toBe(false);
-      expect(totalAmount).toBe(699);
+      expect(totalAmount).toBe(CART_TOTAL);
     });
 
-    it('sets error true on API failure', async () => {
+    it('marks the store as errored when the server fails', async () => {
       vi.mocked(Api.cart.fetchCart).mockRejectedValue(new Error('Network error'));
 
       await act(async () => {
@@ -59,25 +71,25 @@ describe('useCartStore', () => {
   });
 
   describe('addCartItem', () => {
-    it('calls addCartItem then refetches cart', async () => {
-      vi.mocked(Api.cart.addCartItem).mockResolvedValue({} as any);
-      vi.mocked(Api.cart.fetchCart).mockResolvedValue(mockCartResponse as any);
+    it('adds item to the cart and syncs store state', async () => {
+      vi.mocked(Api.cart.addCartItem).mockResolvedValue(MOCK_CART);
+      vi.mocked(Api.cart.fetchCart).mockResolvedValue(MOCK_CART);
 
       await act(async () => {
-        await useCartStore.getState().addCartItem({ productItemId: 1, quantity: 1 });
+        await useCartStore.getState().addCartItem({ productItemId: PRODUCT_ITEM_ID, quantity: 1 });
       });
 
-      expect(Api.cart.addCartItem).toHaveBeenCalledWith({ productItemId: 1, quantity: 1 });
+      expect(Api.cart.addCartItem).toHaveBeenCalledWith({ productItemId: PRODUCT_ITEM_ID, quantity: 1 });
       expect(Api.cart.fetchCart).toHaveBeenCalledOnce();
     });
 
-    it('sets error and rethrows on failure', async () => {
+    it('marks the store as errored and rethrows when adding fails', async () => {
       const error = new Error('Add failed');
       vi.mocked(Api.cart.addCartItem).mockRejectedValue(error);
 
       await expect(
         act(async () => {
-          await useCartStore.getState().addCartItem({ productItemId: 1, quantity: 1 });
+          await useCartStore.getState().addCartItem({ productItemId: PRODUCT_ITEM_ID, quantity: 1 });
         }),
       ).rejects.toThrow('Add failed');
 
@@ -86,29 +98,30 @@ describe('useCartStore', () => {
   });
 
   describe('updateItemQuantity', () => {
-    it('calls updateItemQuantity with id and quantity then refetches', async () => {
-      vi.mocked(Api.cart.updateItemQuantity).mockResolvedValue({} as any);
-      vi.mocked(Api.cart.fetchCart).mockResolvedValue(mockCartResponse as any);
+    it('updates item quantity and syncs store state', async () => {
+      vi.mocked(Api.cart.updateItemQuantity).mockResolvedValue(MOCK_CART);
+      vi.mocked(Api.cart.fetchCart).mockResolvedValue(MOCK_CART);
 
       await act(async () => {
-        await useCartStore.getState().updateItemQuantity(5, 3);
+        await useCartStore.getState().updateItemQuantity(ITEM_ID_TO_UPDATE, NEW_QUANTITY);
       });
 
-      expect(Api.cart.updateItemQuantity).toHaveBeenCalledWith(5, 3);
+      expect(Api.cart.updateItemQuantity).toHaveBeenCalledWith(ITEM_ID_TO_UPDATE, NEW_QUANTITY);
       expect(Api.cart.fetchCart).toHaveBeenCalledOnce();
     });
   });
 
   describe('removeCartItem', () => {
-    it('calls removeCartItem with id then refetches', async () => {
-      vi.mocked(Api.cart.removeCartItem).mockResolvedValue({} as any);
-      vi.mocked(Api.cart.fetchCart).mockResolvedValue({ totalAmount: 0, items: [] } as any);
+    it('removes item from the cart and syncs store state', async () => {
+      vi.mocked(Api.cart.removeCartItem).mockResolvedValue(EMPTY_CART);
+      vi.mocked(Api.cart.fetchCart).mockResolvedValue(EMPTY_CART);
 
       await act(async () => {
-        await useCartStore.getState().removeCartItem(7);
+        await useCartStore.getState().removeCartItem(ITEM_ID_TO_REMOVE);
       });
 
-      expect(Api.cart.removeCartItem).toHaveBeenCalledWith(7);
+      expect(Api.cart.removeCartItem).toHaveBeenCalledWith(ITEM_ID_TO_REMOVE);
+      expect(Api.cart.fetchCart).toHaveBeenCalledOnce();
     });
   });
 });

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { getUserSession } from '@/lib/get-user-session';
 import { UploadThingError } from 'uploadthing/server';
+import { imageUploaderMiddleware } from '@/app/api/uploadthing/core';
 
 vi.mock('@/lib/get-user-session');
 
@@ -12,8 +13,6 @@ vi.mock('uploadthing/next', () => ({
     })),
   ),
 }));
-
-import { imageUploaderMiddleware } from '@/app/api/uploadthing/core';
 
 beforeEach(() => {
   vi.clearAllMocks();

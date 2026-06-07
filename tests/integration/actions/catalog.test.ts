@@ -1,13 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useTestDb, cleanDb } from '@/tests/helpers/db-setup';
 import { createProductFactory } from '@/tests/fixtures/db/products';
-
-vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
-vi.mock('next/headers', () => ({ cookies: vi.fn(() => ({ get: vi.fn(() => undefined) })) }));
-vi.mock('@/lib/send-email', () => ({ sendEmail: vi.fn() }));
-vi.mock('@/lib/create-payment', () => ({ createPayment: vi.fn() }));
-vi.mock('@/lib/get-user-session');
-
 import {
   createCategory,
   updateCategory,
@@ -23,6 +16,12 @@ import {
   deleteProductItem,
 } from '@/app/actions';
 import { revalidatePath } from 'next/cache';
+
+vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
+vi.mock('next/headers', () => ({ cookies: vi.fn(() => ({ get: vi.fn(() => undefined) })) }));
+vi.mock('@/lib/send-email', () => ({ sendEmail: vi.fn() }));
+vi.mock('@/lib/create-payment', () => ({ createPayment: vi.fn() }));
+vi.mock('@/lib/get-user-session');
 
 const prisma = useTestDb();
 const productFactory = createProductFactory(prisma as any);

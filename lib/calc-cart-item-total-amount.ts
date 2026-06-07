@@ -1,8 +1,8 @@
-import { Ingredient, ProductItem } from '@prisma/client';
+import type { Ingredient, ProductItem } from '@prisma/client';
 
 type Item = {
-  productItem: ProductItem;
-  ingredients: Ingredient[];
+  productItem: Pick<ProductItem, 'price'>;
+  ingredients: Pick<Ingredient, 'price'>[];
   quantity: number;
 };
 

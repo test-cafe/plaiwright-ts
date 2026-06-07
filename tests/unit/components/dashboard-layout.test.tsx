@@ -1,61 +1,54 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { getUserSession } from '@/lib/get-user-session';
-import { redirect } from 'next/navigation';
+import DashboardLayout from "@/app/dashboard/layout";
+import { getUserSession } from "@/lib/get-user-session";
+import { redirect } from "next/navigation";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { User } from "@prisma/client";
 
-vi.mock('@/lib/get-user-session');
-vi.mock('next/navigation', () => ({
-  redirect: vi.fn(),
-}));
-vi.mock('@/components/shared/dashboard/dashboard-menu', () => ({
+vi.mock("@/lib/get-user-session");
+vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
+vi.mock("@/components/shared/dashboard/dashboard-menu", () => ({
   DashboardMenu: () => null,
 }));
 
-import DashboardLayout from '@/app/dashboard/layout';
+const ADMIN_SESSION: Partial<User> = { id: 1, email: "admin@test.com", role: "ADMIN", fullName: "Admin User" };
+const USER_SESSION: Partial<User>  = { id: 2, email: "user@test.com",  role: "USER",  fullName: "Regular User" };
 
-beforeEach(() => {
-  vi.clearAllMocks();
-});
+const mockSession = (data: Partial<User> | null) =>
+  vi.mocked(getUserSession).mockResolvedValue(data as User);
 
-describe('DashboardLayout — role guard', () => {
-  it('redirects to / when user is not authenticated', async () => {
-    vi.mocked(getUserSession).mockResolvedValue(null);
+const renderLayout = () => DashboardLayout({ children: <></> });
 
-    await DashboardLayout({ children: null as any });
+beforeEach(() => vi.clearAllMocks());
 
-    expect(redirect).toHaveBeenCalledWith('/');
+describe("DashboardLayout", () => {
+  describe("when user is not authenticated", () => {
+    it("redirects to / exactly once", async () => {
+      mockSession(null);
+
+      await renderLayout();
+
+      expect(redirect).toHaveBeenCalledWith("/");
+      expect(redirect).toHaveBeenCalledTimes(1);
+    });
   });
 
-  it('redirects to / when authenticated user has USER role', async () => {
-    vi.mocked(getUserSession).mockResolvedValue({
-      id: '2',
-      email: 'user@test.com',
-      role: 'USER',
-      name: 'Regular User',
-    } as any);
+  describe("when user has USER role", () => {
+    it("redirects to /", async () => {
+      mockSession(USER_SESSION);
 
-    await DashboardLayout({ children: null as any });
+      await renderLayout();
 
-    expect(redirect).toHaveBeenCalledWith('/');
+      expect(redirect).toHaveBeenCalledWith("/");
+    });
   });
 
-  it('does not redirect when user has ADMIN role', async () => {
-    vi.mocked(getUserSession).mockResolvedValue({
-      id: '1',
-      email: 'admin@test.com',
-      role: 'ADMIN',
-      name: 'Admin User',
-    } as any);
+  describe("when user has ADMIN role", () => {
+    it("does not redirect", async () => {
+      mockSession(ADMIN_SESSION);
 
-    await DashboardLayout({ children: null as any });
+      await renderLayout();
 
-    expect(redirect).not.toHaveBeenCalled();
-  });
-
-  it('calls redirect exactly once for non-admin (no double-redirect)', async () => {
-    vi.mocked(getUserSession).mockResolvedValue(null);
-
-    await DashboardLayout({ children: null as any });
-
-    expect(redirect).toHaveBeenCalledTimes(1);
+      expect(redirect).not.toHaveBeenCalled();
+    });
   });
 });

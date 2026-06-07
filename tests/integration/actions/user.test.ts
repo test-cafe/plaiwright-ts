@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useTestDb, cleanDb } from '@/tests/helpers/db-setup';
 import { createUserFactory } from '@/tests/fixtures/db/users';
+import { registerUser, createUser, updateUser, deleteUser } from '@/app/actions';
+import { revalidatePath } from 'next/cache';
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 vi.mock('next/headers', () => ({ cookies: vi.fn(() => ({ get: vi.fn(() => undefined) })) }));
@@ -11,9 +13,6 @@ vi.mock('bcrypt', async (importOriginal) => {
   const actual = await importOriginal<typeof import('bcrypt')>();
   return { ...actual, hashSync: vi.fn(() => 'hashed-password') };
 });
-
-import { registerUser, createUser, updateUser, deleteUser } from '@/app/actions';
-import { revalidatePath } from 'next/cache';
 
 const prisma = useTestDb();
 const userFactory = createUserFactory(prisma as any);

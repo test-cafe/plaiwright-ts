@@ -4,6 +4,9 @@ import { request } from '@/tests/helpers/api-builder';
 import { urls } from '@/tests/helpers/url-builder';
 import { assertOkResponse, assertErrorResponse } from '@/tests/helpers/response-validator';
 import { z } from 'zod';
+import { rateLimit } from '@/lib/rate-limit';
+import { prisma } from '@/lib/prisma';
+import { compare } from 'bcrypt';
 
 vi.mock('@/lib/rate-limit', () => ({
   rateLimit: vi.fn().mockReturnValue(null),
@@ -20,10 +23,6 @@ vi.mock('@/lib/prisma', () => ({
 vi.mock('bcrypt', () => ({
   compare: vi.fn(),
 }));
-
-import { rateLimit } from '@/lib/rate-limit';
-import { prisma } from '@/lib/prisma';
-import { compare } from 'bcrypt';
 
 const signinSuccessSchema = z.object({
   user: z.object({

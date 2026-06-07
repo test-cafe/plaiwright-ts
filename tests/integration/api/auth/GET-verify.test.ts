@@ -3,6 +3,8 @@ import { GET } from '@/app/api/auth/verify/route';
 import { request } from '@/tests/helpers/api-builder';
 import { urls } from '@/tests/helpers/url-builder';
 import { assertErrorResponse } from '@/tests/helpers/response-validator';
+import { rateLimit } from '@/lib/rate-limit';
+import { prisma } from '@/lib/prisma';
 
 vi.mock('@/lib/rate-limit', () => ({
   rateLimit: vi.fn().mockReturnValue(null),
@@ -19,9 +21,6 @@ vi.mock('@/lib/prisma', () => ({
     },
   },
 }));
-
-import { rateLimit } from '@/lib/rate-limit';
-import { prisma } from '@/lib/prisma';
 
 const validCode = {
   id: 99,

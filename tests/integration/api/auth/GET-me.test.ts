@@ -4,6 +4,8 @@ import { request } from '@/tests/helpers/api-builder';
 import { urls } from '@/tests/helpers/url-builder';
 import { assertOkResponse, assertErrorResponse } from '@/tests/helpers/response-validator';
 import { z } from 'zod';
+import { getUserSession } from '@/lib/get-user-session';
+import { prisma } from '@/lib/prisma';
 
 vi.mock('@/lib/get-user-session');
 vi.mock('@/lib/prisma', () => ({
@@ -16,9 +18,6 @@ vi.mock('@/lib/prisma', () => ({
 vi.mock('@/lib/logger', () => ({
   logger: { trace: vi.fn(), debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn(), fatal: vi.fn(), child: vi.fn() },
 }));
-
-import { getUserSession } from '@/lib/get-user-session';
-import { prisma } from '@/lib/prisma';
 
 const meSchema = z.object({
   fullName: z.string(),

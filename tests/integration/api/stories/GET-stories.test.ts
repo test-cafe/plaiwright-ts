@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET } from '@/app/api/stories/route';
 import { assertOkResponse } from '@/tests/helpers/response-validator';
 import { z } from 'zod';
+import { prisma } from '@/lib/prisma';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
@@ -10,8 +11,6 @@ vi.mock('@/lib/prisma', () => ({
     },
   },
 }));
-
-import { prisma } from '@/lib/prisma';
 
 const storyItemSchema = z.object({
   id: z.number(),
