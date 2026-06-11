@@ -22,12 +22,20 @@ vi.mock('@/lib/send-email', () => ({
 const mockConstructEvent = vi.hoisted(() => vi.fn());
 
 vi.mock('stripe', () => ({
-  default: vi.fn().mockImplementation(function MockStripe(this: any) {
+  default: vi.fn().mockImplementation(function MockStripe() {
     return { webhooks: { constructEvent: mockConstructEvent } };
   }),
 }));
 
-const webhookRequest = (body = '{}', signature = 'valid-sig') =>
+const ORDER_ID = '42';
+const VALID_SIGNATURE = 'valid-sig';
+
+const buildCancelEvent = (type: string) => ({
+  type,
+  data: { object: { metadata: { order_id: ORDER_ID } } },
+});
+
+const webhookRequest = (body = '{}', signature = VALID_SIGNATURE) =>
   request.post(urls.cartCheckoutCallback()).stripeSignature(signature).body(body).build();
 
 beforeEach(() => {
@@ -37,58 +45,37 @@ beforeEach(() => {
 });
 
 describe('POST /api/cart/checkout/callback — payment cancellation', () => {
-  it('returns 200 without updating order when session expires', async () => {
-    mockConstructEvent.mockReturnValue({
-      type: 'checkout.session.expired',
-      data: { object: { metadata: { order_id: '42' } } },
+  describe.each([
+    'checkout.session.expired',
+    'payment_intent.payment_failed',
+    'payment_intent.canceled',
+  ])('event "%s"', (eventType) => {
+    beforeEach(() => {
+      mockConstructEvent.mockReturnValue(buildCancelEvent(eventType));
     });
 
-    const response = await POST(webhookRequest());
-
-    assertStatus(response, 200);
-    expect(prisma.order.update).not.toHaveBeenCalled();
-    expect(sendEmail).not.toHaveBeenCalled();
-  });
-
-  it('returns 200 without updating order on payment_intent.payment_failed', async () => {
-    mockConstructEvent.mockReturnValue({
-      type: 'payment_intent.payment_failed',
-      data: { object: { metadata: { order_id: '42' } } },
-    });
-
-    const response = await POST(webhookRequest());
-
-    assertStatus(response, 200);
-    expect(prisma.order.update).not.toHaveBeenCalled();
-    expect(sendEmail).not.toHaveBeenCalled();
-  });
-
-  it('does not query the order record for non-completed event types', async () => {
-    mockConstructEvent.mockReturnValue({
-      type: 'checkout.session.expired',
-      data: { object: { metadata: { order_id: '42' } } },
-    });
-
-    await POST(webhookRequest());
-
-    expect(prisma.order.findFirst).not.toHaveBeenCalled();
-  });
-
-  it('order stays PENDING — only checkout.session.completed triggers a status transition', async () => {
-    const cancelEvents = [
-      'checkout.session.expired',
-      'payment_intent.payment_failed',
-      'payment_intent.canceled',
-    ];
-
-    for (const eventType of cancelEvents) {
-      vi.clearAllMocks();
-      mockConstructEvent.mockReturnValue({ type: eventType, data: { object: {} } });
-
+    it('returns 200', async () => {
       const response = await POST(webhookRequest());
 
       assertStatus(response, 200);
+    });
+
+    it('does not transition order status', async () => {
+      await POST(webhookRequest());
+
       expect(prisma.order.update).not.toHaveBeenCalled();
-    }
+    });
+
+    it('does not send a receipt email', async () => {
+      await POST(webhookRequest());
+
+      expect(sendEmail).not.toHaveBeenCalled();
+    });
+
+    it('does not query the order record', async () => {
+      await POST(webhookRequest());
+
+      expect(prisma.order.findFirst).not.toHaveBeenCalled();
+    });
   });
 });

@@ -5,7 +5,8 @@ import { getUserSession } from '@/lib/get-user-session';
 import { request } from '@/tests/helpers/api-builder';
 import { urls } from '@/tests/helpers/url-builder';
 import { assertOkResponse, schemas } from '@/tests/helpers/response-validator';
-import { setSession, clearSession } from '@/tests/helpers/auth-setup';
+import { setSession, clearSession, mockRegularUser } from '@/tests/helpers/auth-setup';
+import { buildCartRecord, buildUserRecord } from '@/tests/fixtures/mock-prisma-records';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
@@ -18,15 +19,11 @@ vi.mock('@/lib/get-user-session', () => ({
   getUserSession: vi.fn(),
 }));
 
-const mockCart = {
-  id: 1,
-  totalAmount: 699,
-  tokenId: 'test-token',
-  userId: null,
-  items: [],
-  createdAt: new Date(),
-  updatedAt: new Date(),
-};
+const ANON_CART_TOKEN = 'test-token';
+const MOBILE_CART_TOKEN = 'mobile-token';
+const UNKNOWN_CART_TOKEN = 'unknown-token';
+const CART_TOTAL = 699;
+const REGULAR_USER_DB_ID = Number(mockRegularUser.id);
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -34,45 +31,56 @@ beforeEach(() => {
 });
 
 describe('GET /api/cart', () => {
-  it('returns cart by cookie cartToken for anonymous user', async () => {
-    vi.mocked(prisma.cart.findFirst).mockResolvedValue(mockCart as any);
+  describe('anonymous user lookup', () => {
+    it('looks up the cart by cookie cartToken', async () => {
+      vi.mocked(prisma.cart.findFirst).mockResolvedValue(buildCartRecord({ tokenId: ANON_CART_TOKEN }));
 
-    const response = await GET(request.get(urls.cart()).cartToken('test-token').build());
+      const response = await GET(request.get(urls.cart()).cartToken(ANON_CART_TOKEN).build());
 
-    await assertOkResponse(response, schemas.cart);
-    expect(prisma.cart.findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { OR: expect.arrayContaining([{ tokenId: 'test-token' }]) },
-      }),
-    );
+      await assertOkResponse(response, schemas.cart);
+      expect(prisma.cart.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { OR: expect.arrayContaining([{ tokenId: ANON_CART_TOKEN }]) },
+        }),
+      );
+    });
+
+    it('looks up the cart by x-cart-token header (mobile)', async () => {
+      vi.mocked(prisma.cart.findFirst).mockResolvedValue(buildCartRecord({ tokenId: MOBILE_CART_TOKEN }));
+
+      const response = await GET(
+        request.get(urls.cart()).header('x-cart-token', MOBILE_CART_TOKEN).build(),
+      );
+
+      await assertOkResponse(response, schemas.cart);
+    });
   });
 
-  it('returns cart by x-cart-token header (mobile)', async () => {
-    vi.mocked(prisma.cart.findFirst).mockResolvedValue(mockCart as any);
+  describe('authenticated user lookup', () => {
+    it('looks up the cart by userId for an authenticated user', async () => {
+      setSession(vi.mocked(getUserSession), mockRegularUser);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(buildUserRecord({ id: REGULAR_USER_DB_ID }));
+      vi.mocked(prisma.cart.findFirst).mockResolvedValue(buildCartRecord({ userId: REGULAR_USER_DB_ID }));
 
-    const response = await GET(
-      request.get(urls.cart()).header('x-cart-token', 'mobile-token').build(),
-    );
+      const response = await GET(request.get(urls.cart()).build());
 
-    await assertOkResponse(response, schemas.cart);
+      await assertOkResponse(response, schemas.cart);
+      expect(prisma.cart.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { OR: expect.arrayContaining([{ userId: REGULAR_USER_DB_ID }]) },
+        }),
+      );
+    });
   });
 
-  it('returns cart by userId for authenticated user', async () => {
-    setSession(vi.mocked(getUserSession), { id: '2', email: 'user@test.com', role: 'USER' } as any);
-    vi.mocked(prisma.user.findUnique as any).mockResolvedValue({ id: 2 });
-    vi.mocked(prisma.cart.findFirst).mockResolvedValue({ ...mockCart, userId: 2 } as any);
+  describe('empty results', () => {
+    it('returns an empty items array when no cart is found', async () => {
+      vi.mocked(prisma.cart.findFirst).mockResolvedValue(null);
 
-    const response = await GET(request.get(urls.cart()).build());
+      const response = await GET(request.get(urls.cart()).cartToken(UNKNOWN_CART_TOKEN).build());
+      const body = await assertOkResponse(response, schemas.cart);
 
-    await assertOkResponse(response, schemas.cart);
-  });
-
-  it('returns empty items array when no cart found', async () => {
-    vi.mocked(prisma.cart.findFirst).mockResolvedValue(null);
-
-    const response = await GET(request.get(urls.cart()).cartToken('unknown-token').build());
-    const body = await assertOkResponse(response, schemas.cart);
-
-    expect(body.items).toEqual([]);
+      expect(body.items).toEqual([]);
+    });
   });
 });

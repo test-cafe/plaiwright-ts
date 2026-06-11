@@ -5,7 +5,12 @@ import { getUserSession } from '@/lib/get-user-session';
 import { request } from '@/tests/helpers/api-builder';
 import { urls } from '@/tests/helpers/url-builder';
 import { assertOkResponse, assertStatus, schemas } from '@/tests/helpers/response-validator';
-import { clearSession, setSession } from '@/tests/helpers/auth-setup';
+import { clearSession, setSession, mockRegularUser } from '@/tests/helpers/auth-setup';
+import {
+  buildCartRecord,
+  buildCartItemRecord,
+  buildUserRecord,
+} from '@/tests/fixtures/mock-prisma-records';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
@@ -24,87 +29,100 @@ vi.mock('@/lib/logger', () => ({
   logger: { trace: vi.fn(), debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn(), fatal: vi.fn(), child: vi.fn() },
 }));
 
-const mockCartItem = { id: 1, cartId: 1, productItemId: 10, quantity: 2 };
-const mockCart = {
-  id: 1,
-  totalAmount: 0,
-  tokenId: 'test-token',
-  userId: null,
-  items: [],
-  createdAt: new Date(),
-  updatedAt: new Date(),
-};
+const CART_ID = 1;
+const CART_ITEM_ID = 1;
+const PRODUCT_ITEM_ID = 10;
+const ANON_CART_TOKEN = 'test-token';
+const REGULAR_USER_DB_ID = Number(mockRegularUser.id);
 
-const params = { params: Promise.resolve({ id: '1' }) };
+const cartItemRecord = buildCartItemRecord({
+  id: CART_ITEM_ID,
+  cartId: CART_ID,
+  productItemId: PRODUCT_ITEM_ID,
+});
+
+const params = { params: Promise.resolve({ id: String(CART_ITEM_ID) }) };
 
 beforeEach(() => {
   vi.clearAllMocks();
   clearSession(vi.mocked(getUserSession));
-  vi.mocked(prisma.cartItem.findFirst).mockResolvedValue(mockCartItem as any);
-  vi.mocked(prisma.cartItem.delete).mockResolvedValue(mockCartItem as any);
-  vi.mocked(prisma.cart.findFirst).mockResolvedValue(mockCart as any);
-  vi.mocked(prisma.$executeRaw as any).mockResolvedValue(1);
+  vi.mocked(prisma.cartItem.findFirst).mockResolvedValue(cartItemRecord);
+  vi.mocked(prisma.cartItem.delete).mockResolvedValue(cartItemRecord);
+  vi.mocked(prisma.cart.findFirst).mockResolvedValue(
+    buildCartRecord({ id: CART_ID, tokenId: ANON_CART_TOKEN }),
+  );
+  vi.mocked(prisma.$executeRaw).mockResolvedValue(1);
 });
 
 describe('DELETE /api/cart/[id]', () => {
-  it('deletes item and returns updated cart (anonymous)', async () => {
-    const response = await DELETE(
-      request.delete(urls.cartItem(1)).cartToken('test-token').build(),
-      params,
-    );
+  describe('anonymous flow', () => {
+    it('deletes the cart item by id and returns the updated cart', async () => {
+      const response = await DELETE(
+        request.delete(urls.cartItem(CART_ITEM_ID)).cartToken(ANON_CART_TOKEN).build(),
+        params,
+      );
 
-    await assertOkResponse(response, schemas.cart);
-    expect(prisma.cartItem.delete).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: 1 } }),
-    );
+      await assertOkResponse(response, schemas.cart);
+      expect(prisma.cartItem.delete).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: CART_ITEM_ID } }),
+      );
+    });
   });
 
-  it('deletes item for authenticated user', async () => {
-    setSession(vi.mocked(getUserSession), { id: '2', email: 'user@test.com', role: 'USER' } as any);
-    vi.mocked(prisma.user.findUnique as any).mockResolvedValue({ id: 2 });
-    vi.mocked(prisma.cart.findFirst).mockResolvedValue({ ...mockCart, userId: 2 } as any);
+  describe('authenticated flow', () => {
+    it('deletes the cart item for an authenticated user', async () => {
+      setSession(vi.mocked(getUserSession), mockRegularUser);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(buildUserRecord({ id: REGULAR_USER_DB_ID }));
+      vi.mocked(prisma.cart.findFirst).mockResolvedValue(
+        buildCartRecord({ id: CART_ID, userId: REGULAR_USER_DB_ID }),
+      );
 
-    const response = await DELETE(
-      request.delete(urls.cartItem(1)).build(),
-      params,
-    );
+      const response = await DELETE(
+        request.delete(urls.cartItem(CART_ITEM_ID)).build(),
+        params,
+      );
 
-    await assertOkResponse(response, schemas.cart);
-    expect(prisma.cartItem.delete).toHaveBeenCalled();
+      await assertOkResponse(response, schemas.cart);
+      expect(prisma.cartItem.delete).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: CART_ITEM_ID } }),
+      );
+    });
   });
 
-  it('returns error body when no cartToken and unauthenticated', async () => {
-    const response = await DELETE(
-      request.delete(urls.cartItem(1)).build(),
-      params,
-    );
+  describe('error cases', () => {
+    it('returns an error body when there is no cart token and no session', async () => {
+      const response = await DELETE(
+        request.delete(urls.cartItem(CART_ITEM_ID)).build(),
+        params,
+      );
 
-    const body = (await response.json()) as Record<string, string>;
-    expect(body.error).toMatch(/cart token/i);
-    expect(prisma.cartItem.delete).not.toHaveBeenCalled();
-  });
+      const body = (await response.json()) as Record<string, string>;
+      expect(body.error).toMatch(/cart token/i);
+      expect(prisma.cartItem.delete).not.toHaveBeenCalled();
+    });
 
-  it('returns error body when cart item not found', async () => {
-    vi.mocked(prisma.cartItem.findFirst).mockResolvedValue(null);
+    it('returns an error body when the cart item does not exist', async () => {
+      vi.mocked(prisma.cartItem.findFirst).mockResolvedValue(null);
 
-    const response = await DELETE(
-      request.delete(urls.cartItem(1)).cartToken('test-token').build(),
-      params,
-    );
+      const response = await DELETE(
+        request.delete(urls.cartItem(CART_ITEM_ID)).cartToken(ANON_CART_TOKEN).build(),
+        params,
+      );
 
-    const body = (await response.json()) as Record<string, string>;
-    expect(body.error).toMatch(/cart item not found/i);
-    expect(prisma.cartItem.delete).not.toHaveBeenCalled();
-  });
+      const body = (await response.json()) as Record<string, string>;
+      expect(body.error).toMatch(/cart item not found/i);
+      expect(prisma.cartItem.delete).not.toHaveBeenCalled();
+    });
 
-  it('returns 500 on unexpected error', async () => {
-    vi.mocked(prisma.cartItem.findFirst).mockRejectedValue(new Error('DB crash'));
+    it('returns 500 when the database throws', async () => {
+      vi.mocked(prisma.cartItem.findFirst).mockRejectedValue(new Error('DB crash'));
 
-    const response = await DELETE(
-      request.delete(urls.cartItem(1)).cartToken('test-token').build(),
-      params,
-    );
+      const response = await DELETE(
+        request.delete(urls.cartItem(CART_ITEM_ID)).cartToken(ANON_CART_TOKEN).build(),
+        params,
+      );
 
-    assertStatus(response, 500);
+      assertStatus(response, 500);
+    });
   });
 });

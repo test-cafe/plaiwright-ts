@@ -2,7 +2,8 @@ import DashboardLayout from "@/app/dashboard/layout";
 import { getUserSession } from "@/lib/get-user-session";
 import { redirect } from "next/navigation";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { User } from "@prisma/client";
+import type { Session } from "next-auth";
+import { UserRole } from "@prisma/client";
 
 vi.mock("@/lib/get-user-session");
 vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
@@ -10,11 +11,13 @@ vi.mock("@/components/shared/dashboard/dashboard-menu", () => ({
   DashboardMenu: () => null,
 }));
 
-const ADMIN_SESSION: Partial<User> = { id: 1, email: "admin@test.com", role: "ADMIN", fullName: "Admin User" };
-const USER_SESSION: Partial<User>  = { id: 2, email: "user@test.com",  role: "USER",  fullName: "Regular User" };
+type SessionUser = Session["user"];
 
-const mockSession = (data: Partial<User> | null) =>
-  vi.mocked(getUserSession).mockResolvedValue(data as User);
+const ADMIN_SESSION: SessionUser = { id: "1", role: UserRole.ADMIN, name: "Admin User", image: "" };
+const USER_SESSION:  SessionUser = { id: "2", role: UserRole.USER,  name: "Regular User", image: "" };
+
+const mockSession = (data: SessionUser | null) =>
+  vi.mocked(getUserSession).mockResolvedValue(data);
 
 const renderLayout = () => DashboardLayout({ children: <></> });
 

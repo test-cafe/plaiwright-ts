@@ -1,4 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { Session } from 'next-auth';
+import { UserRole } from '@prisma/client';
 import { getUserSession } from '@/lib/get-user-session';
 import { UploadThingError } from 'uploadthing/server';
 import { imageUploaderMiddleware } from '@/app/api/uploadthing/core';
@@ -14,42 +16,59 @@ vi.mock('uploadthing/next', () => ({
   ),
 }));
 
+type SessionUser = Session['user'];
+
+const USER_ID = '7';
+const ADMIN_ID = '1';
+
+const regularUser: SessionUser = {
+  id: USER_ID,
+  role: UserRole.USER,
+  name: 'Regular User',
+  image: '',
+};
+
+const adminUser: SessionUser = {
+  id: ADMIN_ID,
+  role: UserRole.ADMIN,
+  name: 'Admin',
+  image: '',
+};
+
 beforeEach(() => {
   vi.clearAllMocks();
 });
 
 describe('UploadThing imageUploader — auth middleware', () => {
-  it('throws Unauthorized when no session exists', async () => {
-    vi.mocked(getUserSession).mockResolvedValue(null);
+  describe('when no session exists', () => {
+    beforeEach(() => {
+      vi.mocked(getUserSession).mockResolvedValue(null);
+    });
 
-    await expect(imageUploaderMiddleware()).rejects.toThrow('Unauthorized');
+    it('rejects with an Unauthorized message', async () => {
+      await expect(imageUploaderMiddleware()).rejects.toThrow('Unauthorized');
+    });
+
+    it('rejects with an UploadThingError instance', async () => {
+      await expect(imageUploaderMiddleware()).rejects.toBeInstanceOf(UploadThingError);
+    });
   });
 
-  it('throws a UploadThingError for unauthenticated requests', async () => {
-    vi.mocked(getUserSession).mockResolvedValue(null);
+  describe('when an authenticated user is present', () => {
+    it('returns userId metadata for a USER-role session', async () => {
+      vi.mocked(getUserSession).mockResolvedValue(regularUser);
 
-    await expect(imageUploaderMiddleware()).rejects.toBeInstanceOf(UploadThingError);
-  });
+      const metadata = await imageUploaderMiddleware();
 
-  it('returns userId metadata for authenticated USER-role user', async () => {
-    vi.mocked(getUserSession).mockResolvedValue({
-      id: '7',
-      email: 'user@test.com',
-      role: 'USER',
-      name: 'Regular User',
-    } as any);
+      expect(metadata).toEqual({ userId: USER_ID });
+    });
 
-    await expect(imageUploaderMiddleware()).resolves.toEqual({ userId: '7' });
-  });
+    it('returns userId metadata for an ADMIN-role session', async () => {
+      vi.mocked(getUserSession).mockResolvedValue(adminUser);
 
-  it('returns userId metadata for authenticated ADMIN-role user', async () => {
-    vi.mocked(getUserSession).mockResolvedValue({
-      id: '1',
-      email: 'admin@test.com',
-      role: 'ADMIN',
-      name: 'Admin',
-    } as any);
+      const metadata = await imageUploaderMiddleware();
 
-    await expect(imageUploaderMiddleware()).resolves.toEqual({ userId: '1' });
+      expect(metadata).toEqual({ userId: ADMIN_ID });
+    });
   });
 });

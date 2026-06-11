@@ -6,6 +6,8 @@ import { prisma } from '@/lib/prisma';
 import { CartItemDTO } from '@/services/dto/cart';
 import Stripe from 'stripe';
 
+export type CompletedCheckoutSession = Pick<Stripe.Checkout.Session, 'metadata'>;
+
 export async function POST(req: NextRequest) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -22,7 +24,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (event.type === 'checkout.session.completed') {
-    const session = event.data.object as Stripe.Checkout.Session;
+    const session = event.data.object as CompletedCheckoutSession;
     const orderId = Number(session.metadata?.order_id);
 
     const order = await prisma.order.findFirst({

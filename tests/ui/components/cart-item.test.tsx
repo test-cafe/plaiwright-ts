@@ -1,67 +1,79 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import type { ComponentProps } from 'react';
 import { CartItem } from '@/components/shared/cart-item';
 
-const defaultProps = {
-  id: 1,
-  name: 'Pepperoni Pizza',
-  price: 899,
-  imageUrl: 'https://example.com/pepperoni.png',
-  quantity: 2,
+type CartItemProps = ComponentProps<typeof CartItem>;
+
+const ITEM_NAME = 'Pepperoni Pizza';
+const ITEM_PRICE = 899;
+const ITEM_IMAGE_URL = 'https://example.com/pepperoni.png';
+const INITIAL_QUANTITY = 2;
+const MIN_QUANTITY = 1;
+
+const buildProps = (overrides: Partial<CartItemProps> = {}): CartItemProps => ({
+  name: ITEM_NAME,
+  price: ITEM_PRICE,
+  imageUrl: ITEM_IMAGE_URL,
+  quantity: INITIAL_QUANTITY,
   onClickRemove: vi.fn(),
   onClickCountButton: vi.fn(),
-};
+  ...overrides,
+});
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
 
 describe('CartItem', () => {
-  it('renders product name', () => {
-    render(<CartItem {...defaultProps} />);
-    expect(screen.getByText('Pepperoni Pizza')).toBeInTheDocument();
+  describe('rendering', () => {
+    it('shows the product name', () => {
+      render(<CartItem {...buildProps()} />);
+
+      expect(screen.getByText(ITEM_NAME)).toBeInTheDocument();
+    });
+
+    it('shows the current quantity', () => {
+      render(<CartItem {...buildProps()} />);
+
+      expect(screen.getByText(String(INITIAL_QUANTITY))).toBeInTheDocument();
+    });
   });
 
-  it('renders quantity', () => {
-    render(<CartItem {...defaultProps} />);
-    expect(screen.getByText('2')).toBeInTheDocument();
+  describe('remove control', () => {
+    it('invokes onClickRemove when the X button is clicked', () => {
+      const onClickRemove = vi.fn();
+      render(<CartItem {...buildProps({ onClickRemove })} />);
+
+      fireEvent.click(screen.getByTestId('remove-item'));
+
+      expect(onClickRemove).toHaveBeenCalledOnce();
+    });
   });
 
-  it('calls onClickRemove when X button is clicked', () => {
-    const onClickRemove = vi.fn();
-    render(<CartItem {...defaultProps} quantity={2} onClickRemove={onClickRemove} />);
+  describe('quantity controls', () => {
+    it('invokes onClickCountButton with "plus" when the + button is clicked', () => {
+      const onClickCountButton = vi.fn();
+      render(<CartItem {...buildProps({ onClickCountButton })} />);
 
-    // buttons order: [minus, plus, remove-x]
-    const buttons = screen.getAllByRole('button');
-    const removeButton = buttons[buttons.length - 1];
-    fireEvent.click(removeButton);
+      fireEvent.click(screen.getByTestId('count-plus'));
 
-    expect(onClickRemove).toHaveBeenCalledOnce();
-  });
+      expect(onClickCountButton).toHaveBeenCalledWith('plus');
+    });
 
-  it('calls onClickCountButton with "plus" when + button is clicked', () => {
-    const onClickCountButton = vi.fn();
-    render(<CartItem {...defaultProps} quantity={2} onClickCountButton={onClickCountButton} />);
+    it('invokes onClickCountButton with "minus" when the − button is clicked', () => {
+      const onClickCountButton = vi.fn();
+      render(<CartItem {...buildProps({ onClickCountButton })} />);
 
-    // buttons order: [minus, plus, remove-x]
-    const buttons = screen.getAllByRole('button');
-    const plusButton = buttons[1];
-    fireEvent.click(plusButton);
+      fireEvent.click(screen.getByTestId('count-minus'));
 
-    expect(onClickCountButton).toHaveBeenCalledWith('plus');
-  });
+      expect(onClickCountButton).toHaveBeenCalledWith('minus');
+    });
 
-  it('calls onClickCountButton with "minus" when - button is clicked', () => {
-    const onClickCountButton = vi.fn();
-    render(<CartItem {...defaultProps} quantity={2} onClickCountButton={onClickCountButton} />);
+    it('disables the minus button at minimum quantity', () => {
+      render(<CartItem {...buildProps({ quantity: MIN_QUANTITY })} />);
 
-    const buttons = screen.getAllByRole('button');
-    const minusButton = buttons[0];
-    fireEvent.click(minusButton);
-
-    expect(onClickCountButton).toHaveBeenCalledWith('minus');
-  });
-
-  it('disables minus button when quantity is 1', () => {
-    render(<CartItem {...defaultProps} quantity={1} />);
-    const buttons = screen.getAllByRole('button');
-    const minusButton = buttons[0];
-    expect(minusButton).toBeDisabled();
+      expect(screen.getByTestId('count-minus')).toBeDisabled();
+    });
   });
 });

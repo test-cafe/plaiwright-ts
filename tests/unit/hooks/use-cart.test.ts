@@ -1,54 +1,95 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react';
 import { useCart } from '@/hooks/use-cart';
-import { useCartStore } from '@/store/cart';
-
-vi.mock('@/store/cart', () => ({
-  useCartStore: vi.fn(),
-}));
+import { useCartStore, type CartState, type ICartItem } from '@/store/cart';
 
 vi.mock('lodash.debounce', () => ({
-  default: (fn: (...args: any[]) => any) => fn,
+  default: <T extends (...args: any[]) => any>(fn: T): T => fn,
 }));
 
-const mockStore = {
-  totalAmount: 699,
-  items: [{ id: 1, name: 'Pepperoni', quantity: 1, price: 699, imageUrl: '', ingredients: [] }],
-  loading: false,
-  fetchCartItems: vi.fn(),
-  addCartItem: vi.fn(),
-  updateItemQuantity: vi.fn(),
-  removeCartItem: vi.fn(),
+const TOTAL_AMOUNT = 699;
+const NEW_QUANTITY = 2;
+
+const PEPPERONI_ITEM: ICartItem = {
+  id: 1,
+  name: 'Pepperoni',
+  quantity: 1,
+  price: TOTAL_AMOUNT,
+  imageUrl: '',
+  ingredients: [],
 };
+
+const buildStoreState = (
+  overrides: Partial<CartState> = {},
+): Partial<CartState> => ({
+  totalAmount: TOTAL_AMOUNT,
+  items: [PEPPERONI_ITEM],
+  loading: false,
+  error: false,
+  fetchCartItems: vi.fn<CartState['fetchCartItems']>().mockResolvedValue(undefined),
+  addCartItem: vi.fn<CartState['addCartItem']>().mockResolvedValue(undefined),
+  updateItemQuantity: vi.fn<CartState['updateItemQuantity']>().mockResolvedValue(undefined),
+  removeCartItem: vi.fn<CartState['removeCartItem']>().mockResolvedValue(undefined),
+  ...overrides,
+});
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.mocked(useCartStore).mockImplementation((selector: any) => selector(mockStore));
+  useCartStore.setState(buildStoreState());
 });
 
 describe('useCart', () => {
-  it('returns cart state from store', () => {
-    const { result } = renderHook(() => useCart());
-    expect(result.current.totalAmount).toBe(699);
-    expect(result.current.items).toHaveLength(1);
-    expect(result.current.loading).toBe(false);
-  });
+  describe('mirrors store state', () => {
+    it('exposes totalAmount from the store', () => {
+      const { result } = renderHook(() => useCart());
 
-  it('does not fetch cart on mount when runFetch is not set', () => {
-    renderHook(() => useCart());
-    expect(mockStore.fetchCartItems).not.toHaveBeenCalled();
-  });
+      expect(result.current.totalAmount).toBe(TOTAL_AMOUNT);
+    });
 
-  it('fetches cart on mount when runFetch is true', async () => {
-    renderHook(() => useCart(true));
+    it('exposes items from the store', () => {
+      const { result } = renderHook(() => useCart());
 
-    await waitFor(() => {
-      expect(mockStore.fetchCartItems).toHaveBeenCalledOnce();
+      expect(result.current.items).toEqual([PEPPERONI_ITEM]);
+    });
+
+    it('exposes the loading flag from the store', () => {
+      const { result } = renderHook(() => useCart());
+
+      expect(result.current.loading).toBe(false);
     });
   });
 
-  it('exposes updateItemQuantity (debounced in real usage)', () => {
-    const { result } = renderHook(() => useCart());
-    expect(typeof result.current.updateItemQuantity).toBe('function');
+  describe('mount-time fetch', () => {
+    it('does not call fetchCartItems when runFetch is omitted', () => {
+      const fetchSpy = vi.fn<CartState['fetchCartItems']>().mockResolvedValue(undefined);
+      useCartStore.setState({ fetchCartItems: fetchSpy });
+
+      renderHook(() => useCart());
+
+      expect(fetchSpy).not.toHaveBeenCalled();
+    });
+
+    it('calls fetchCartItems once when runFetch is true', async () => {
+      const fetchSpy = vi.fn<CartState['fetchCartItems']>().mockResolvedValue(undefined);
+      useCartStore.setState({ fetchCartItems: fetchSpy });
+
+      renderHook(() => useCart(true));
+
+      await waitFor(() => {
+        expect(fetchSpy).toHaveBeenCalledOnce();
+      });
+    });
+  });
+
+  describe('action delegation', () => {
+    it('forwards updateItemQuantity arguments to the store action', () => {
+      const updateSpy = vi.fn<CartState['updateItemQuantity']>().mockResolvedValue(undefined);
+      useCartStore.setState({ updateItemQuantity: updateSpy });
+
+      const { result } = renderHook(() => useCart());
+      result.current.updateItemQuantity(PEPPERONI_ITEM.id, NEW_QUANTITY);
+
+      expect(updateSpy).toHaveBeenCalledWith(PEPPERONI_ITEM.id, NEW_QUANTITY);
+    });
   });
 });

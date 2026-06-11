@@ -1,13 +1,16 @@
-import { vi } from 'vitest';
-import type { Mock } from 'vitest';
+import type { MockedFunction } from 'vitest';
 import type { Session } from 'next-auth';
+import { UserRole } from '@prisma/client';
+import type { getUserSession } from '@/lib/get-user-session';
+
+type SessionMock = MockedFunction<typeof getUserSession>;
 
 export const mockAdminSession: Session = {
   user: {
     id: '1',
-    email: 'admin@test.com',
     name: 'Admin User',
-    role: 'ADMIN',
+    image: '',
+    role: UserRole.ADMIN,
   },
   expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
 };
@@ -15,9 +18,9 @@ export const mockAdminSession: Session = {
 export const mockUserSession: Session = {
   user: {
     id: '2',
-    email: 'user@test.com',
     name: 'Regular User',
-    role: 'USER',
+    image: '',
+    role: UserRole.USER,
   },
   expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
 };
@@ -35,10 +38,10 @@ export const mockRegularUser = mockUserSession.user!;
  *
  *   beforeEach(() => setSession(vi.mocked(getUserSession), mockRegularUser));
  */
-export function setSession(mockFn: Mock, value: unknown): void {
+export function setSession(mockFn: SessionMock, value: Session['user']): void {
   mockFn.mockResolvedValue(value);
 }
 
-export function clearSession(mockFn: Mock): void {
+export function clearSession(mockFn: SessionMock): void {
   mockFn.mockResolvedValue(null);
 }

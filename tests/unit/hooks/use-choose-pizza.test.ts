@@ -1,7 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { Mock } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useChoosePizza, IProduct } from '@/hooks/use-choose-pizza';
 import { useCart } from '@/hooks/use-cart';
+
+type AddCartItem = ReturnType<typeof useCart>['addCartItem'];
 
 vi.mock('@/hooks/use-cart', () => ({
   useCart: vi.fn(),
@@ -113,10 +116,10 @@ describe('useChoosePizza', () => {
   });
 
   describe('when submitting to cart', () => {
-    let mockAddCartItem: ReturnType<typeof vi.fn>;
+    let mockAddCartItem: Mock<AddCartItem>;
 
     beforeEach(() => {
-      mockAddCartItem = vi.fn().mockResolvedValue(undefined);
+      mockAddCartItem = vi.fn<AddCartItem>().mockResolvedValue(undefined);
       vi.mocked(useCart).mockReturnValue(createMockUseCart({ addCartItem: mockAddCartItem }));
     });
 

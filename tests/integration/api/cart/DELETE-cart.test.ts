@@ -5,7 +5,8 @@ import { getUserSession } from '@/lib/get-user-session';
 import { request } from '@/tests/helpers/api-builder';
 import { urls } from '@/tests/helpers/url-builder';
 import { assertOkResponse, assertStatus, schemas } from '@/tests/helpers/response-validator';
-import { clearSession, setSession } from '@/tests/helpers/auth-setup';
+import { clearSession, setSession, mockRegularUser } from '@/tests/helpers/auth-setup';
+import { buildCartRecord, buildUserRecord } from '@/tests/fixtures/mock-prisma-records';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
@@ -24,66 +25,80 @@ vi.mock('@/lib/logger', () => ({
   logger: { trace: vi.fn(), debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn(), fatal: vi.fn(), child: vi.fn() },
 }));
 
-const mockCart = {
-  id: 1,
-  totalAmount: 0,
-  tokenId: 'test-token',
-  userId: null,
-  items: [],
-  createdAt: new Date(),
-  updatedAt: new Date(),
-};
+const CART_ID = 1;
+const ANON_CART_TOKEN = 'test-token';
+const GHOST_CART_TOKEN = 'ghost-token';
+const ITEMS_DELETED_COUNT = 2;
+const REGULAR_USER_DB_ID = Number(mockRegularUser.id);
 
 beforeEach(() => {
   vi.clearAllMocks();
   clearSession(vi.mocked(getUserSession));
-  vi.mocked(prisma.cart.findFirst).mockResolvedValue(mockCart as any);
-  vi.mocked(prisma.cartItem.deleteMany).mockResolvedValue({ count: 2 });
-  vi.mocked(prisma.$executeRaw as any).mockResolvedValue(1);
+  vi.mocked(prisma.cart.findFirst).mockResolvedValue(
+    buildCartRecord({ id: CART_ID, tokenId: ANON_CART_TOKEN }),
+  );
+  vi.mocked(prisma.cartItem.deleteMany).mockResolvedValue({ count: ITEMS_DELETED_COUNT });
+  vi.mocked(prisma.$executeRaw).mockResolvedValue(1);
 });
 
 describe('DELETE /api/cart', () => {
-  it('clears all items and returns empty cart (anonymous)', async () => {
-    const response = await DELETE(request.delete(urls.cart()).cartToken('test-token').build());
+  describe('anonymous flow', () => {
+    it('clears all items in the cart matched by cartToken', async () => {
+      const response = await DELETE(
+        request.delete(urls.cart()).cartToken(ANON_CART_TOKEN).build(),
+      );
 
-    await assertOkResponse(response, schemas.cart);
-    expect(prisma.cartItem.deleteMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { cartId: mockCart.id } }),
-    );
+      await assertOkResponse(response, schemas.cart);
+      expect(prisma.cartItem.deleteMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { cartId: CART_ID } }),
+      );
+    });
   });
 
-  it('clears all items for authenticated user', async () => {
-    setSession(vi.mocked(getUserSession), { id: '2', email: 'user@test.com', role: 'USER' } as any);
-    vi.mocked(prisma.user.findUnique as any).mockResolvedValue({ id: 2 });
-    vi.mocked(prisma.cart.findFirst).mockResolvedValue({ ...mockCart, userId: 2 } as any);
+  describe('authenticated flow', () => {
+    it('clears all items in the cart matched by userId', async () => {
+      setSession(vi.mocked(getUserSession), mockRegularUser);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(buildUserRecord({ id: REGULAR_USER_DB_ID }));
+      vi.mocked(prisma.cart.findFirst).mockResolvedValue(
+        buildCartRecord({ id: CART_ID, userId: REGULAR_USER_DB_ID }),
+      );
 
-    const response = await DELETE(request.delete(urls.cart()).build());
+      const response = await DELETE(request.delete(urls.cart()).build());
 
-    await assertOkResponse(response, schemas.cart);
-    expect(prisma.cartItem.deleteMany).toHaveBeenCalled();
+      await assertOkResponse(response, schemas.cart);
+      expect(prisma.cartItem.deleteMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { cartId: CART_ID } }),
+      );
+    });
   });
 
-  it('returns 400 when no cartToken and unauthenticated', async () => {
-    const response = await DELETE(request.delete(urls.cart()).build());
+  describe('error cases', () => {
+    it('returns 400 when there is no cart token and no session', async () => {
+      const response = await DELETE(request.delete(urls.cart()).build());
 
-    assertStatus(response, 400);
-    expect(prisma.cartItem.deleteMany).not.toHaveBeenCalled();
-  });
+      assertStatus(response, 400);
+      expect(prisma.cartItem.deleteMany).not.toHaveBeenCalled();
+    });
 
-  it('returns 404 when cart not found', async () => {
-    vi.mocked(prisma.cart.findFirst).mockResolvedValue(null);
+    it('returns 404 when no cart matches the given token', async () => {
+      vi.mocked(prisma.cart.findFirst).mockResolvedValue(null);
 
-    const response = await DELETE(request.delete(urls.cart()).cartToken('ghost-token').build());
+      const response = await DELETE(
+        request.delete(urls.cart()).cartToken(GHOST_CART_TOKEN).build(),
+      );
 
-    assertStatus(response, 404);
-    expect(prisma.cartItem.deleteMany).not.toHaveBeenCalled();
-  });
+      assertStatus(response, 404);
+      expect(prisma.cartItem.deleteMany).not.toHaveBeenCalled();
+    });
 
-  it('returns 500 on unexpected error', async () => {
-    vi.mocked(prisma.cart.findFirst).mockRejectedValue(new Error('DB crash'));
+    it('returns 500 when the database throws', async () => {
+      vi.mocked(prisma.cart.findFirst).mockRejectedValue(new Error('DB crash'));
 
-    const response = await DELETE(request.delete(urls.cart()).cartToken('test-token').build());
+      const response = await DELETE(
+        request.delete(urls.cart()).cartToken(ANON_CART_TOKEN).build(),
+      );
 
-    assertStatus(response, 500);
+      assertStatus(response, 500);
+    });
   });
 });
