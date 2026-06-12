@@ -1,11 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { Session } from 'next-auth';
+import { UserRole } from '@prisma/client';
 import { GET } from '@/app/api/auth/me/route';
-import { request } from '@/tests/helpers/api-builder';
-import { urls } from '@/tests/helpers/url-builder';
-import { assertOkResponse, assertErrorResponse } from '@/tests/helpers/response-validator';
-import { z } from 'zod';
 import { getUserSession } from '@/lib/get-user-session';
 import { prisma } from '@/lib/prisma';
+import { assertOkResponse, assertErrorResponse, schemas } from '@/tests/helpers/response-validator';
+import { setSession } from '@/tests/helpers/auth-setup';
+import { buildUserRecord } from '@/tests/fixtures/mock-prisma-records';
 
 vi.mock('@/lib/get-user-session');
 vi.mock('@/lib/prisma', () => ({
@@ -16,12 +17,28 @@ vi.mock('@/lib/prisma', () => ({
   },
 }));
 vi.mock('@/lib/logger', () => ({
-  logger: { trace: vi.fn(), debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn(), fatal: vi.fn(), child: vi.fn() },
+  logger: {
+    trace: vi.fn(),
+    debug: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    fatal: vi.fn(),
+    child: vi.fn(),
+  },
 }));
 
-const meSchema = z.object({
-  fullName: z.string(),
-  email: z.string().email(),
+const USER_ID = 1;
+const USER_NAME = 'Alice';
+const USER_EMAIL = 'alice@test.com';
+const OTHER_USER_ID = 42;
+
+const buildSession = (overrides: Partial<Session['user']> = {}): Session['user'] => ({
+  id: String(USER_ID),
+  name: USER_NAME,
+  image: '',
+  role: UserRole.USER,
+  ...overrides,
 });
 
 beforeEach(() => {
@@ -29,49 +46,49 @@ beforeEach(() => {
 });
 
 describe('GET /api/auth/me', () => {
-  it('returns 401 when no session', async () => {
-    vi.mocked(getUserSession).mockResolvedValue(null);
+  describe('unauthenticated requests', () => {
+    it('returns 401 when there is no session', async () => {
+      vi.mocked(getUserSession).mockResolvedValue(null);
 
-    const response = await GET();
+      const response = await GET();
 
-    await assertErrorResponse(response, 401, 'Unauthorized');
+      await assertErrorResponse(response, 401, 'Unauthorized');
+    });
   });
 
-  it('returns user fullName and email when authenticated', async () => {
-    vi.mocked(getUserSession).mockResolvedValue({ id: '1', name: 'Alice', email: 'alice@test.com' } as any);
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({
-      fullName: 'Alice',
-      email: 'alice@test.com',
-    } as any);
+  describe('authenticated requests', () => {
+    beforeEach(() => {
+      setSession(vi.mocked(getUserSession), buildSession());
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(
+        buildUserRecord({ id: USER_ID, fullName: USER_NAME, email: USER_EMAIL }),
+      );
+    });
 
-    const response = await GET();
+    it('returns the user fullName and email', async () => {
+      const response = await GET();
 
-    const body = await assertOkResponse(response, meSchema);
-    expect(body.fullName).toBe('Alice');
-    expect(body.email).toBe('alice@test.com');
-  });
+      const body = await assertOkResponse(response, schemas.me);
+      expect(body).toEqual({ fullName: USER_NAME, email: USER_EMAIL });
+    });
 
-  it('does not expose password in the response', async () => {
-    vi.mocked(getUserSession).mockResolvedValue({ id: '2', name: 'Bob', email: 'bob@test.com' } as any);
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({
-      fullName: 'Bob',
-      email: 'bob@test.com',
-    } as any);
+    it('excludes the password field from the database query', async () => {
+      await GET();
 
-    const response = await GET();
-    const body = await response.json();
+      expect(prisma.user.findUnique).toHaveBeenCalledWith(
+        expect.objectContaining({
+          select: expect.objectContaining({ password: false }),
+        }),
+      );
+    });
 
-    expect(body).not.toHaveProperty('password');
-  });
+    it('queries by the numeric user id from the session', async () => {
+      setSession(vi.mocked(getUserSession), buildSession({ id: String(OTHER_USER_ID) }));
 
-  it('queries by the numeric user id from the session', async () => {
-    vi.mocked(getUserSession).mockResolvedValue({ id: '42', name: 'Carol', email: 'carol@test.com' } as any);
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({ fullName: 'Carol', email: 'carol@test.com' } as any);
+      await GET();
 
-    await GET();
-
-    expect(prisma.user.findUnique).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: 42 } }),
-    );
+      expect(prisma.user.findUnique).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: OTHER_USER_ID } }),
+      );
+    });
   });
 });

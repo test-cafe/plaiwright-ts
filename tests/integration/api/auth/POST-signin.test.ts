@@ -1,12 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { NextResponse, type NextRequest } from 'next/server';
 import { POST } from '@/app/api/auth/signin/route';
-import { request } from '@/tests/helpers/api-builder';
-import { urls } from '@/tests/helpers/url-builder';
-import { assertOkResponse, assertErrorResponse } from '@/tests/helpers/response-validator';
-import { z } from 'zod';
 import { rateLimit } from '@/lib/rate-limit';
 import { prisma } from '@/lib/prisma';
 import { compare } from 'bcrypt';
+import { request } from '@/tests/helpers/api-builder';
+import { urls } from '@/tests/helpers/url-builder';
+import { assertOkResponse, assertErrorResponse, schemas } from '@/tests/helpers/response-validator';
+import { buildUserRecord } from '@/tests/fixtures/mock-prisma-records';
 
 vi.mock('@/lib/rate-limit', () => ({
   rateLimit: vi.fn().mockReturnValue(null),
@@ -24,102 +25,106 @@ vi.mock('bcrypt', () => ({
   compare: vi.fn(),
 }));
 
-const signinSuccessSchema = z.object({
-  user: z.object({
-    id: z.number(),
-    fullName: z.string(),
-    email: z.string().email(),
-  }),
+// bcrypt's `compare` has callback + promise overloads; narrow to the promise overload for mocking.
+type AsyncCompare = (data: string | Buffer, hash: string) => Promise<boolean>;
+const mockCompare = vi.mocked(compare as AsyncCompare);
+
+const USER_ID = 1;
+const USER_EMAIL = 'alice@test.com';
+const USER_NAME = 'Alice';
+const HASHED_PASSWORD = 'hashed';
+const VALID_PASSWORD = 'correct';
+const WRONG_PASSWORD = 'wrong';
+const UNKNOWN_EMAIL = 'unknown@test.com';
+
+const userRecord = buildUserRecord({
+  id: USER_ID,
+  email: USER_EMAIL,
+  fullName: USER_NAME,
+  password: HASHED_PASSWORD,
 });
 
-const fakeUser = {
-  id: 1,
-  fullName: 'Alice',
-  email: 'alice@test.com',
-  password: 'hashed',
-  verified: new Date(),
-  role: 'USER',
-  provider: 'credentials',
-  providerId: null,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-};
+const postSignin = (body: unknown): NextRequest =>
+  request.post(urls.authSignin()).json(body).build();
 
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(rateLimit).mockReturnValue(null);
-  vi.mocked(prisma.user.findFirst).mockResolvedValue(fakeUser as any);
-  vi.mocked(compare).mockResolvedValue(true as never);
+  vi.mocked(prisma.user.findFirst).mockResolvedValue(userRecord);
+  mockCompare.mockResolvedValue(true);
 });
 
 describe('POST /api/auth/signin', () => {
-  it('returns 429 when rate limit is exceeded', async () => {
-    const rateLimitResponse = new Response(JSON.stringify({ message: 'Too many requests. Please try again later.' }), {
-      status: 429,
+  describe('rate limiting', () => {
+    it('returns 429 when the limiter blocks the request', async () => {
+      vi.mocked(rateLimit).mockReturnValue(
+        NextResponse.json(
+          { message: 'Too many requests. Please try again later.' },
+          { status: 429 },
+        ),
+      );
+
+      const response = await POST(postSignin({ email: USER_EMAIL, password: VALID_PASSWORD }));
+
+      expect(response.status).toBe(429);
     });
-    vi.mocked(rateLimit).mockReturnValue(rateLimitResponse as any);
-
-    const req = request.post(urls.authSignin()).json({ email: 'alice@test.com', password: 'pass' }).build();
-    const response = await POST(req);
-
-    expect(response.status).toBe(429);
   });
 
-  it('returns 400 when email is missing', async () => {
-    const req = request.post(urls.authSignin()).json({ password: 'pass' }).build();
-    const response = await POST(req);
+  describe('input validation', () => {
+    it('returns 400 when email is missing', async () => {
+      const response = await POST(postSignin({ password: VALID_PASSWORD }));
 
-    await assertErrorResponse(response, 400);
+      await assertErrorResponse(response, 400);
+    });
+
+    it('returns 400 when password is missing', async () => {
+      const response = await POST(postSignin({ email: USER_EMAIL }));
+
+      await assertErrorResponse(response, 400);
+    });
   });
 
-  it('returns 400 when password is missing', async () => {
-    const req = request.post(urls.authSignin()).json({ email: 'alice@test.com' }).build();
-    const response = await POST(req);
+  describe('credential validation', () => {
+    it('returns 401 when no user matches the email', async () => {
+      vi.mocked(prisma.user.findFirst).mockResolvedValue(null);
 
-    await assertErrorResponse(response, 400);
+      const response = await POST(
+        postSignin({ email: UNKNOWN_EMAIL, password: VALID_PASSWORD }),
+      );
+
+      await assertErrorResponse(response, 401, 'Invalid credentials');
+    });
+
+    it('returns 401 when the password does not match', async () => {
+      mockCompare.mockResolvedValue(false);
+
+      const response = await POST(postSignin({ email: USER_EMAIL, password: WRONG_PASSWORD }));
+
+      await assertErrorResponse(response, 401, 'Invalid credentials');
+    });
   });
 
-  it('returns 401 when user does not exist', async () => {
-    vi.mocked(prisma.user.findFirst).mockResolvedValue(null);
+  describe('successful sign-in', () => {
+    it('returns the user id, fullName, and email', async () => {
+      const response = await POST(postSignin({ email: USER_EMAIL, password: VALID_PASSWORD }));
 
-    const req = request.post(urls.authSignin()).json({ email: 'unknown@test.com', password: 'pass' }).build();
-    const response = await POST(req);
+      const body = await assertOkResponse(response, schemas.signinSuccess);
+      expect(body.user).toEqual({ id: USER_ID, fullName: USER_NAME, email: USER_EMAIL });
+    });
 
-    await assertErrorResponse(response, 401, 'Invalid credentials');
-  });
+    it('does not expose the password in the response', async () => {
+      const response = await POST(postSignin({ email: USER_EMAIL, password: VALID_PASSWORD }));
 
-  it('returns 401 when password is wrong', async () => {
-    vi.mocked(compare).mockResolvedValue(false as never);
+      const body = (await response.json()) as { user: Record<string, unknown> };
+      expect(body.user).not.toHaveProperty('password');
+    });
 
-    const req = request.post(urls.authSignin()).json({ email: 'alice@test.com', password: 'wrong' }).build();
-    const response = await POST(req);
+    it('looks up the user by email', async () => {
+      await POST(postSignin({ email: USER_EMAIL, password: VALID_PASSWORD }));
 
-    await assertErrorResponse(response, 401, 'Invalid credentials');
-  });
-
-  it('returns user id, fullName, and email on success', async () => {
-    const req = request.post(urls.authSignin()).json({ email: 'alice@test.com', password: 'correct' }).build();
-    const response = await POST(req);
-
-    const body = await assertOkResponse(response, signinSuccessSchema);
-    expect(body.user.fullName).toBe('Alice');
-    expect(body.user.email).toBe('alice@test.com');
-  });
-
-  it('does not expose password in the success response', async () => {
-    const req = request.post(urls.authSignin()).json({ email: 'alice@test.com', password: 'correct' }).build();
-    const response = await POST(req);
-
-    const body = await response.json();
-    expect(body.user).not.toHaveProperty('password');
-  });
-
-  it('looks up the user by email', async () => {
-    const req = request.post(urls.authSignin()).json({ email: 'alice@test.com', password: 'correct' }).build();
-    await POST(req);
-
-    expect(prisma.user.findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { email: 'alice@test.com' } }),
-    );
+      expect(prisma.user.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { email: USER_EMAIL } }),
+      );
+    });
   });
 });

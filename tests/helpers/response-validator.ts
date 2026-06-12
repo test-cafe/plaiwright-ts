@@ -100,6 +100,42 @@ export const schemas = {
     }),
   }),
 
+  // Sign-in success — returns the authenticated user summary (same shape as register)
+  signinSuccess: z.object({
+    user: z.object({
+      id: z.number(),
+      fullName: z.string(),
+      email: z.string().email(),
+    }),
+  }),
+
+  // GET /api/auth/me — returns the authenticated user's name and email
+  me: z.object({
+    fullName: z.string(),
+    email: z.string().email(),
+  }),
+
+  // Ingredient (GET /api/ingredients)
+  ingredient: z.object({
+    id: z.number(),
+    name: z.string(),
+    price: z.number(),
+    imageUrl: z.string(),
+  }),
+
+  // Story with nested items (GET /api/stories)
+  story: z.object({
+    id: z.number(),
+    previewImageUrl: z.string(),
+    items: z.array(
+      z.object({
+        id: z.number(),
+        storyId: z.number(),
+        sourceUrl: z.string(),
+      }),
+    ),
+  }),
+
   // Stripe webhook acknowledgement
   webhookAck: z.object({
     received: z.boolean(),

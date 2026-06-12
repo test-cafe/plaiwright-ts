@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { GET } from '@/app/api/stories/route';
-import { assertOkResponse } from '@/tests/helpers/response-validator';
 import { z } from 'zod';
+import { GET } from '@/app/api/stories/route';
 import { prisma } from '@/lib/prisma';
+import { assertOkResponse, schemas } from '@/tests/helpers/response-validator';
+import { buildStoryRecord } from '@/tests/fixtures/mock-prisma-records';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
@@ -12,60 +13,66 @@ vi.mock('@/lib/prisma', () => ({
   },
 }));
 
-const storyItemSchema = z.object({
-  id: z.number(),
-  url: z.string(),
-});
-
-const storiesSchema = z.array(
-  z.object({
-    id: z.number(),
-    previewImageUrl: z.string(),
-    items: z.array(storyItemSchema),
-  }),
-);
+const STORY_ID = 1;
+const STORY_ITEM_ID = 10;
+const STORY_PREVIEW_URL = 'https://example.com/story-preview.png';
+const STORY_ITEM_SOURCE_URL = 'https://example.com/slide1.png';
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(prisma.story.findMany).mockResolvedValue([]);
 });
 
 describe('GET /api/stories', () => {
-  it('returns an empty array when no stories exist', async () => {
-    vi.mocked(prisma.story.findMany).mockResolvedValue([]);
+  describe('when no stories exist', () => {
+    it('returns an empty array', async () => {
+      const response = await GET();
 
-    const response = await GET();
-
-    const body = await assertOkResponse(response, z.array(z.unknown()));
-    expect(body).toHaveLength(0);
+      const body = await assertOkResponse(response, z.array(schemas.story));
+      expect(body).toHaveLength(0);
+    });
   });
 
-  it('returns stories with nested items', async () => {
-    vi.mocked(prisma.story.findMany).mockResolvedValue([
-      {
-        id: 1,
-        previewImageUrl: 'https://example.com/story1.png',
-        createdAt: new Date(),
-        items: [
-          { id: 10, storyId: 1, url: 'https://example.com/slide1.png', createdAt: new Date() },
-        ],
-      },
-    ] as any);
+  describe('when stories exist', () => {
+    beforeEach(() => {
+      vi.mocked(prisma.story.findMany).mockResolvedValue([
+        buildStoryRecord({
+          id: STORY_ID,
+          previewImageUrl: STORY_PREVIEW_URL,
+          items: [
+            {
+              id: STORY_ITEM_ID,
+              storyId: STORY_ID,
+              sourceUrl: STORY_ITEM_SOURCE_URL,
+              createdAt: new Date(),
+            },
+          ],
+        }),
+      ]);
+    });
 
-    const response = await GET();
+    it('returns each story with its nested items', async () => {
+      const response = await GET();
 
-    const body = await assertOkResponse(response, storiesSchema);
-    expect(body).toHaveLength(1);
-    expect(body[0].items).toHaveLength(1);
-    expect(body[0].items[0].url).toBe('https://example.com/slide1.png');
+      const body = await assertOkResponse(response, z.array(schemas.story));
+      expect(body).toHaveLength(1);
+      expect(body[0].items).toEqual([
+        expect.objectContaining({
+          id: STORY_ITEM_ID,
+          storyId: STORY_ID,
+          sourceUrl: STORY_ITEM_SOURCE_URL,
+        }),
+      ]);
+    });
   });
 
-  it('includes items relation in the Prisma query', async () => {
-    vi.mocked(prisma.story.findMany).mockResolvedValue([]);
+  describe('query shape', () => {
+    it('includes the items relation', async () => {
+      await GET();
 
-    await GET();
-
-    expect(prisma.story.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ include: expect.objectContaining({ items: true }) }),
-    );
+      expect(prisma.story.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ include: expect.objectContaining({ items: true }) }),
+      );
+    });
   });
 });

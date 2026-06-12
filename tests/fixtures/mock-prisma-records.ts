@@ -1,4 +1,4 @@
-import type { Prisma, User, CartItem, VerificationCode } from '@prisma/client';
+import type { Prisma, User, CartItem, VerificationCode, Ingredient } from '@prisma/client';
 import { OrderStatus, UserRole } from '@prisma/client';
 
 export type CartWithItems = Prisma.CartGetPayload<{ include: { items: true } }>;
@@ -107,6 +107,51 @@ export const buildVerificationCodeRecord = (
   expiresAt: new Date(Date.now() + 60_000),
   createdAt: new Date(),
   updatedAt: new Date(),
+  ...overrides,
+});
+
+export type ProductWithDetails = Prisma.ProductGetPayload<{
+  include: {
+    ingredients: true;
+    items: {
+      include: {
+        product: { include: { items: true } };
+      };
+    };
+  };
+}>;
+
+export const buildProductRecord = (
+  overrides: Partial<ProductWithDetails> = {},
+): ProductWithDetails => ({
+  id: 1,
+  name: 'Margherita',
+  imageUrl: 'https://example.com/margherita.png',
+  categoryId: 1,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  ingredients: [],
+  items: [],
+  ...overrides,
+});
+
+export const buildIngredientRecord = (overrides: Partial<Ingredient> = {}): Ingredient => ({
+  id: 1,
+  name: 'Cheese',
+  price: 50,
+  imageUrl: 'https://example.com/cheese.png',
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  ...overrides,
+});
+
+export type StoryWithItems = Prisma.StoryGetPayload<{ include: { items: true } }>;
+
+export const buildStoryRecord = (overrides: Partial<StoryWithItems> = {}): StoryWithItems => ({
+  id: 1,
+  previewImageUrl: 'https://example.com/story-preview.png',
+  items: [],
+  createdAt: new Date(),
   ...overrides,
 });
 
