@@ -29,7 +29,8 @@ export const ProductsGroupList: React.FC<Props> = ({
   const locked = useCategoryStore((state) => state.locked);
   const intersectionRef = React.useRef(null);
   const intersection = useIntersection(intersectionRef, {
-    threshold: 0.1,
+    threshold: 0,
+    rootMargin: '-45% 0px -45% 0px',
   });
 
   React.useEffect(() => {

@@ -65,7 +65,7 @@ Clicking a product card navigates to `/product/[id]`. The parallel route `app/(r
 
 ### Category nav active state
 
-`ProductsGroupList` uses an `IntersectionObserver` (threshold 0.1) to call `useCategoryStore.setActiveId()` as sections scroll into view. Clicking a nav link immediately sets `activeId` and locks the store for 1 s (via `locked` flag) to prevent the observer from overriding it. `Categories` component resets to the first category when `window.scrollY < 100`.
+`ProductsGroupList` uses an `IntersectionObserver` with `rootMargin: '-45% 0px -45% 0px'` (a thin band across the viewport's vertical middle) so only one section is ever intersecting at a time. It calls `useCategoryStore.setActiveId()` as sections cross that band. Clicking a nav link immediately sets `activeId` and locks the store for 1 s (via `locked` flag) to prevent the observer from overriding it. `Categories` component resets to the first category when `window.scrollY < 100`.
 
 ### Prisma quirk
 
