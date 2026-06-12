@@ -1,20 +1,29 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 import { AxeBuilder } from '@axe-core/playwright';
 import { DriverFactory } from '../driver-factory';
 
-// @a11y
+const WCAG_TAGS = ['wcag2a', 'wcag2aa'];
+const PRODUCT_CARD_SELECTOR = '[data-testid="product-card"]';
+const PRODUCT_CARD_TIMEOUT_MS = 10000;
+const AUTH_DIALOG_SCOPE = '[role="dialog"]';
+const SEED_PRODUCT_ID = 1;
+
+async function expectAccessible(page: Page, scope?: string) {
+  const builder = new AxeBuilder({ page }).withTags(WCAG_TAGS);
+  if (scope) builder.include(scope);
+  const results = await builder.analyze();
+
+  expect(results.violations).toEqual([]);
+}
+
 test.describe('@a11y Accessibility — core pages', () => {
   test('home page has no critical accessibility violations', async ({ browser }) => {
     const driver = await DriverFactory.asGuest(browser);
 
     await driver.page.goto('/');
-    await driver.page.waitForSelector('[data-testid="product-card"]', { timeout: 10000 });
+    await driver.page.waitForSelector(PRODUCT_CARD_SELECTOR, { timeout: PRODUCT_CARD_TIMEOUT_MS });
 
-    const results = await new AxeBuilder({ page: driver.page })
-      .withTags(['wcag2a', 'wcag2aa'])
-      .analyze();
-
-    expect(results.violations).toEqual([]);
+    await expectAccessible(driver.page);
 
     await driver.dispose();
   });
@@ -22,13 +31,9 @@ test.describe('@a11y Accessibility — core pages', () => {
   test('product detail page has no critical accessibility violations', async ({ browser }) => {
     const driver = await DriverFactory.asGuest(browser);
 
-    await driver.product.goto(1);
+    await driver.product.goto(SEED_PRODUCT_ID);
 
-    const results = await new AxeBuilder({ page: driver.page })
-      .withTags(['wcag2a', 'wcag2aa'])
-      .analyze();
-
-    expect(results.violations).toEqual([]);
+    await expectAccessible(driver.page);
 
     await driver.dispose();
   });
@@ -38,11 +43,7 @@ test.describe('@a11y Accessibility — core pages', () => {
 
     await driver.cart.goto();
 
-    const results = await new AxeBuilder({ page: driver.page })
-      .withTags(['wcag2a', 'wcag2aa'])
-      .analyze();
-
-    expect(results.violations).toEqual([]);
+    await expectAccessible(driver.page);
 
     await driver.dispose();
   });
@@ -52,11 +53,7 @@ test.describe('@a11y Accessibility — core pages', () => {
 
     await driver.checkout.goto();
 
-    const results = await new AxeBuilder({ page: driver.page })
-      .withTags(['wcag2a', 'wcag2aa'])
-      .analyze();
-
-    expect(results.violations).toEqual([]);
+    await expectAccessible(driver.page);
 
     await driver.dispose();
   });
@@ -67,58 +64,43 @@ test.describe('@a11y Accessibility — core pages', () => {
     await driver.page.goto('/');
     await driver.auth.openAuthModal();
 
-    const results = await new AxeBuilder({ page: driver.page })
-      .withTags(['wcag2a', 'wcag2aa'])
-      .include('[role="dialog"]')
-      .analyze();
-
-    expect(results.violations).toEqual([]);
+    await expectAccessible(driver.page, AUTH_DIALOG_SCOPE);
 
     await driver.dispose();
   });
 
-  test('dashboard is accessible to admin users', async ({ browser }) => {
+  test('dashboard has no critical accessibility violations for admins', async ({ browser }) => {
     const driver = await DriverFactory.asAdmin(browser);
 
     await driver.dashboard.goto();
 
-    const results = await new AxeBuilder({ page: driver.page })
-      .withTags(['wcag2a', 'wcag2aa'])
-      .analyze();
-
-    expect(results.violations).toEqual([]);
+    await expectAccessible(driver.page);
 
     await driver.dispose();
   });
 });
 
-// @a11y
 test.describe('@a11y Accessibility — keyboard navigation', () => {
-  test('user can tab through nav categories', async ({ browser }) => {
+  test('pressing Tab on the home page moves focus to an interactive element', async ({ browser }) => {
     const driver = await DriverFactory.asGuest(browser);
 
     await driver.page.goto('/');
-    await driver.page.waitForSelector('[data-testid="product-card"]');
+    await driver.page.waitForSelector(PRODUCT_CARD_SELECTOR);
     await driver.page.keyboard.press('Tab');
 
-    const focused = driver.page.locator(':focus').first();
-    await expect(focused).toBeVisible();
+    await expect(driver.page.locator(':focus').first()).toBeVisible();
 
     await driver.dispose();
   });
 
-  test('product cards are keyboard reachable', async ({ browser }) => {
+  test('product cards are keyboard focusable', async ({ browser }) => {
     const driver = await DriverFactory.asGuest(browser);
 
     await driver.page.goto('/');
-    await driver.page.waitForSelector('[data-testid="product-card"]');
+    await driver.page.waitForSelector(PRODUCT_CARD_SELECTOR);
+    await driver.page.locator(PRODUCT_CARD_SELECTOR).first().focus();
 
-    // Verify that product card links are focusable (in the tab order)
-    await driver.page.locator('[data-testid="product-card"]').first().focus();
-    const focused = await driver.page.evaluate(() =>
-      document.activeElement?.getAttribute('data-testid'),
-    );
-    expect(focused).toBe('product-card');
+    await expect(driver.page.locator(':focus')).toHaveAttribute('data-testid', 'product-card');
 
     await driver.dispose();
   });
