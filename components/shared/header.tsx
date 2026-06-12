@@ -45,10 +45,11 @@ export const Header: React.FC<Props> = ({ className, hasSearch = true, hasCart =
     }
 
     if (toastMessage) {
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         router.replace('/');
         toast.success(toastMessage, { duration: 3000 });
       }, 1000);
+      return () => clearTimeout(timeoutId);
     }
   }, []);
 
