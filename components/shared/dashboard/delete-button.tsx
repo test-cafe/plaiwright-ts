@@ -3,6 +3,7 @@
 import {
   deleteCategory,
   deleteIngredient,
+  deleteOrder,
   deleteProduct,
   deleteProductItem,
   deleteUser,
@@ -13,7 +14,7 @@ import React from 'react';
 
 interface Props {
   id: number;
-  type: 'user' | 'category' | 'product' | 'ingredient' | 'product-items';
+  type: 'user' | 'category' | 'product' | 'ingredient' | 'product-items' | 'order';
   className?: string;
 }
 
@@ -31,6 +32,8 @@ export const DeleteButton: React.FC<Props> = ({ id, type, className }) => {
       await deleteIngredient(id);
     } else if (type === 'product-items') {
       await deleteProductItem(id);
+    } else if (type === 'order') {
+      await deleteOrder(id);
     }
   };
 
@@ -55,9 +58,10 @@ export const DeleteButton: React.FC<Props> = ({ id, type, className }) => {
 
   return (
     <Button
+      variant="destructive"
       data-testid={`delete-${id}`}
       onClick={() => setConfirming(true)}
-      className={`w-10 h-10 p-0 text-white ${className ?? ''}`}>
+      className={`w-10 h-10 p-0 ${className ?? ''}`}>
       <Trash2 size={16} />
     </Button>
   );

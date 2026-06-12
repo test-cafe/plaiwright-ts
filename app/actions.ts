@@ -380,6 +380,21 @@ export async function deleteProductItem(id: number) {
   }
 }
 
+export async function deleteOrder(id: number) {
+  try {
+    await prisma.order.delete({
+      where: {
+        id,
+      },
+    });
+
+    revalidatePath('/dashboard/orders');
+  } catch (error) {
+    logger.error({ error }, '[ACTION] deleteOrder failed');
+    throw error;
+  }
+}
+
 export async function requestPasswordReset(email: string) {
   try {
     const user = await prisma.user.findFirst({ where: { email } });

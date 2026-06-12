@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { OrderStatus } from '@/components/shared/order-status';
+import { DeleteButton } from '@/components/shared/dashboard/delete-button';
 
 export default async function AdminOrdersPage() {
   const orders = await prisma.order.findMany({ orderBy: { createdAt: 'desc' } });
@@ -20,12 +21,13 @@ export default async function AdminOrdersPage() {
             <TableHead className="min-w-[7rem]">Status</TableHead>
             <TableHead className="min-w-[6rem]">Total</TableHead>
             <TableHead className="min-w-[8rem]">Created At</TableHead>
+            <TableHead className="min-w-[6rem]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {orders.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="text-center text-gray-400 py-16">
+              <TableCell colSpan={8} className="text-center text-gray-400 py-16">
                 No orders yet.
               </TableCell>
             </TableRow>
@@ -41,6 +43,9 @@ export default async function AdminOrdersPage() {
                 </TableCell>
                 <TableCell>${order.totalAmount.toFixed(2)}</TableCell>
                 <TableCell>{order.createdAt.toLocaleDateString()}</TableCell>
+                <TableCell>
+                  <DeleteButton id={order.id} type="order" />
+                </TableCell>
               </TableRow>
             ))
           )}
