@@ -47,6 +47,7 @@ export const DeleteButton: React.FC<Props> = ({ id, type, className }) => {
           Delete
         </Button>
         <Button
+          data-testid="cancel-delete"
           variant="outline"
           onClick={() => setConfirming(false)}
           className="w-auto h-8 px-3 text-xs">

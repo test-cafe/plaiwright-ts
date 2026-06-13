@@ -23,9 +23,26 @@ export class DashboardPage {
     await this.page.locator('[data-testid="submit"]').click();
   }
 
+  async gotoOrders() {
+    await this.page.goto('/dashboard/orders');
+  }
+
   async deleteEntity(id: number) {
     await this.page.locator(`[data-testid="delete-${id}"]`).click();
     await this.page.locator('[data-testid="confirm-delete"]').click();
+  }
+
+  async cancelDeleteEntity(id: number) {
+    await this.page.locator(`[data-testid="delete-${id}"]`).click();
+    await this.page.locator('[data-testid="cancel-delete"]').click();
+  }
+
+  async assertEntityVisible(id: number) {
+    await expect(this.page.locator(`[data-testid="delete-${id}"]`)).toBeVisible();
+  }
+
+  async assertEntityRemoved(id: number) {
+    await expect(this.page.locator(`[data-testid="delete-${id}"]`)).toHaveCount(0);
   }
 
   async assertOnDashboard() {
