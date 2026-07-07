@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { OrderStatus } from '@/components/shared/order-status';
 import { DeleteButton } from '@/components/shared/dashboard/delete-button';
+import { formatMoney } from '@/lib/utils';
 
 export default async function AdminOrdersPage() {
   const orders = await prisma.order.findMany({ orderBy: { createdAt: 'desc' } });
@@ -41,7 +42,7 @@ export default async function AdminOrdersPage() {
                 <TableCell>
                   <OrderStatus variant={order.status} />
                 </TableCell>
-                <TableCell>${order.totalAmount.toFixed(2)}</TableCell>
+                <TableCell>{formatMoney(order.totalAmount)}</TableCell>
                 <TableCell>{order.createdAt.toLocaleDateString()}</TableCell>
                 <TableCell>
                   <DeleteButton id={order.id} type="order" />

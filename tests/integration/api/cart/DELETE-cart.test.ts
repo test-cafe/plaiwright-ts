@@ -6,14 +6,13 @@ import { request } from '@/tests/helpers/api-builder';
 import { urls } from '@/tests/helpers/url-builder';
 import { assertOkResponse, assertStatus, schemas } from '@/tests/helpers/response-validator';
 import { clearSession, setSession, mockRegularUser } from '@/tests/helpers/auth-setup';
-import { buildCartRecord, buildUserRecord } from '@/tests/fixtures/mock-prisma-records';
+import { buildCartWithDeepItems, buildUserRecord } from '@/tests/fixtures/mock-prisma-records';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
     user: { findUnique: vi.fn() },
     cartItem: { deleteMany: vi.fn() },
-    cart: { findFirst: vi.fn() },
-    $executeRaw: vi.fn(),
+    cart: { findFirst: vi.fn(), update: vi.fn() },
   },
 }));
 
@@ -35,10 +34,13 @@ beforeEach(() => {
   vi.clearAllMocks();
   clearSession(vi.mocked(getUserSession));
   vi.mocked(prisma.cart.findFirst).mockResolvedValue(
-    buildCartRecord({ id: CART_ID, tokenId: ANON_CART_TOKEN }),
+    buildCartWithDeepItems({ id: CART_ID, tokenId: ANON_CART_TOKEN }),
   );
   vi.mocked(prisma.cartItem.deleteMany).mockResolvedValue({ count: ITEMS_DELETED_COUNT });
-  vi.mocked(prisma.$executeRaw).mockResolvedValue(1);
+  vi.mocked(prisma.cart.update).mockImplementation(async ({ data }) => ({
+    ...buildCartWithDeepItems({ id: CART_ID, tokenId: ANON_CART_TOKEN }),
+    totalAmount: data.totalAmount as number,
+  }));
 });
 
 describe('DELETE /api/cart', () => {
@@ -60,7 +62,7 @@ describe('DELETE /api/cart', () => {
       setSession(vi.mocked(getUserSession), mockRegularUser);
       vi.mocked(prisma.user.findUnique).mockResolvedValue(buildUserRecord({ id: REGULAR_USER_DB_ID }));
       vi.mocked(prisma.cart.findFirst).mockResolvedValue(
-        buildCartRecord({ id: CART_ID, userId: REGULAR_USER_DB_ID }),
+        buildCartWithDeepItems({ id: CART_ID, userId: REGULAR_USER_DB_ID }),
       );
 
       const response = await DELETE(request.delete(urls.cart()).build());

@@ -25,12 +25,12 @@ describe('Order DB', () => {
     expect(found?.items).toMatchObject(items);
   });
 
-  it('stores float totalAmount via raw SQL without precision loss', async () => {
+  it('stores totalAmount as integer cents', async () => {
     const user = await userFactory.build();
-    const order = await orderFactory.build(user.id, { totalAmount: 1350.5 });
+    const order = await orderFactory.build(user.id, { totalAmount: 135050 });
 
     const found = await prisma.order.findUnique({ where: { id: order.id } });
-    expect(found?.totalAmount).toBeCloseTo(1350.5, 2);
+    expect(found?.totalAmount).toBe(135050);
   });
 
   it('defaults to PENDING status', async () => {

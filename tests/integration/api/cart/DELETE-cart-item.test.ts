@@ -8,6 +8,7 @@ import { assertOkResponse, assertStatus, schemas } from '@/tests/helpers/respons
 import { clearSession, setSession, mockRegularUser } from '@/tests/helpers/auth-setup';
 import {
   buildCartRecord,
+  buildCartWithDeepItems,
   buildCartItemRecord,
   buildUserRecord,
 } from '@/tests/fixtures/mock-prisma-records';
@@ -16,8 +17,7 @@ vi.mock('@/lib/prisma', () => ({
   prisma: {
     user: { findUnique: vi.fn() },
     cartItem: { findFirst: vi.fn(), delete: vi.fn() },
-    cart: { findFirst: vi.fn() },
-    $executeRaw: vi.fn(),
+    cart: { findFirst: vi.fn(), update: vi.fn() },
   },
 }));
 
@@ -49,9 +49,12 @@ beforeEach(() => {
   vi.mocked(prisma.cartItem.findFirst).mockResolvedValue(cartItemRecord);
   vi.mocked(prisma.cartItem.delete).mockResolvedValue(cartItemRecord);
   vi.mocked(prisma.cart.findFirst).mockResolvedValue(
-    buildCartRecord({ id: CART_ID, tokenId: ANON_CART_TOKEN }),
+    buildCartWithDeepItems({ id: CART_ID, tokenId: ANON_CART_TOKEN }),
   );
-  vi.mocked(prisma.$executeRaw).mockResolvedValue(1);
+  vi.mocked(prisma.cart.update).mockImplementation(async ({ data }) => ({
+    ...buildCartWithDeepItems({ id: CART_ID, tokenId: ANON_CART_TOKEN }),
+    totalAmount: data.totalAmount as number,
+  }));
 });
 
 describe('DELETE /api/cart/[id]', () => {
@@ -74,7 +77,7 @@ describe('DELETE /api/cart/[id]', () => {
       setSession(vi.mocked(getUserSession), mockRegularUser);
       vi.mocked(prisma.user.findUnique).mockResolvedValue(buildUserRecord({ id: REGULAR_USER_DB_ID }));
       vi.mocked(prisma.cart.findFirst).mockResolvedValue(
-        buildCartRecord({ id: CART_ID, userId: REGULAR_USER_DB_ID }),
+        buildCartWithDeepItems({ id: CART_ID, userId: REGULAR_USER_DB_ID }),
       );
 
       const response = await DELETE(

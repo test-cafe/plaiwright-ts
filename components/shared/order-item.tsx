@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { OrderCartItem } from '@/components/shared/order-cart-item';
-import { cn } from '@/lib/utils';
+import { cn, formatMoney } from '@/lib/utils';
 import { ChevronDown } from 'lucide-react';
 import { Title } from '@/components/shared/title';
 import { OrderStatus } from './order-status';
@@ -65,7 +65,7 @@ export const OrderItem: React.FC<Props> = ({
 
           <div className="p-5 px-7">
             <h3 className="text-xl">
-              Total: <b>${totalAmount}</b>
+              Total: <b>{formatMoney(totalAmount)}</b>
             </h3>
           </div>
         </div>

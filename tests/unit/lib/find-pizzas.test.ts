@@ -13,12 +13,14 @@ import type { CategoryProducts } from '@/@types/prisma';
 import type { Ingredient, Product, ProductItem } from '@prisma/client';
 
 const DEFAULT_MIN_PRICE = 0;
-const DEFAULT_MAX_PRICE = 100;
+const DEFAULT_MAX_PRICE = 10000;
 const DEFAULT_LIMIT = 12;
 const DEFAULT_PAGE = 1;
 
 const CUSTOM_MIN_PRICE = 200;
 const CUSTOM_MAX_PRICE = 800;
+const CUSTOM_MIN_PRICE_CENTS = 20000;
+const CUSTOM_MAX_PRICE_CENTS = 80000;
 const CUSTOM_LIMIT = 6;
 const CUSTOM_PAGE = 3;
 
@@ -82,8 +84,8 @@ describe('parseSearchParams', () => {
         priceTo: String(CUSTOM_MAX_PRICE),
       });
 
-      expect(filter.minPrice).toBe(CUSTOM_MIN_PRICE);
-      expect(filter.maxPrice).toBe(CUSTOM_MAX_PRICE);
+      expect(filter.minPrice).toBe(CUSTOM_MIN_PRICE_CENTS);
+      expect(filter.maxPrice).toBe(CUSTOM_MAX_PRICE_CENTS);
     });
   });
 
@@ -190,8 +192,8 @@ describe('findPizzas', () => {
 
     expect(repo.findPizzas).toHaveBeenCalledWith(
       expect.objectContaining({
-        minPrice: CUSTOM_MIN_PRICE,
-        maxPrice: CUSTOM_MAX_PRICE,
+        minPrice: CUSTOM_MIN_PRICE_CENTS,
+        maxPrice: CUSTOM_MAX_PRICE_CENTS,
         ingredientIds: INGREDIENT_IDS,
       }),
     );

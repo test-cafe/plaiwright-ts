@@ -20,7 +20,7 @@ export async function createPayment(details: {
           product_data: {
             name: details.description,
           },
-          unit_amount: Math.round(details.amount * 100),
+          unit_amount: details.amount,
         },
         quantity: 1,
       },

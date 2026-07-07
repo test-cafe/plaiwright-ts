@@ -17,11 +17,11 @@ const priceCases = [
     expected: 699,
   },
   {
-    label: 'one float ingredient, qty 2',
+    label: 'one ingredient, qty 2',
     productItem: { price: 899 },
-    ingredients: [{ price: 50.5 }],
+    ingredients: [{ price: 50 }],
     quantity: 2,
-    expected: 1899,
+    expected: 1898,
   },
   {
     label: 'multiple ingredients, qty 3',
@@ -37,13 +37,6 @@ const priceCases = [
     quantity: 1,
     expected: 1199,
   },
-  {
-    label: 'small float precision case',
-    productItem: { price: 1000 },
-    ingredients: [{ price: 0.1 }, { price: 0.2 }],
-    quantity: 1,
-    expected: 1000.3,
-  },
 ];
 
 describe('calcCartItemTotalAmount', () => {
@@ -54,7 +47,7 @@ describe('calcCartItemTotalAmount', () => {
 
       const result = calcCartItemTotalAmount(item);
 
-      expect(result).toBeCloseTo(expected, 2);
+      expect(result).toBe(expected);
     },
   );
 

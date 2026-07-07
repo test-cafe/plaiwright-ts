@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatMoney } from '@/lib/utils';
 import { Title } from './title';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -36,7 +36,7 @@ export const ProductCard: React.FC<Props> = ({ id, name, price, imageUrl, ingred
               {ingredients?.map((i) => i.name).join(', ') || ''}
             </p>
             <div className="flex items-center justify-between gap-2">
-              <span className="text-base font-bold truncate">from ${price}</span>
+              <span className="text-base font-bold truncate">from {formatMoney(price)}</span>
               <Button size="sm" className="font-bold shrink-0">
                 <Plus className="w-4 h-4 mr-1" />
                 Add
@@ -66,7 +66,7 @@ export const ProductCard: React.FC<Props> = ({ id, name, price, imageUrl, ingred
 
           <div className="flex justify-between items-center mt-4 gap-2">
             <span className="text-[20px] truncate">
-              from <b>${price}</b>
+              from <b>{formatMoney(price)}</b>
             </span>
             <Button className="text-base font-bold shrink-0">
               <Plus className="w-5 h-5 mr-1" />

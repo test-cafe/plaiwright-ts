@@ -49,16 +49,17 @@ describe('Cart DB — anonymous cart merge', () => {
   });
 });
 
-describe('Cart DB — totalAmount Float precision', () => {
-  it('stores float totalAmount correctly via raw SQL', async () => {
+describe('Cart DB — totalAmount integer cents', () => {
+  it('stores totalAmount as integer cents', async () => {
     const cart = await cartFactory.buildAnonymous();
 
-    await prisma.$executeRaw`
-      UPDATE "Cart" SET "totalAmount" = ${1350.5}::float8 WHERE id = ${cart.id}
-    `;
+    await prisma.cart.update({
+      where: { id: cart.id },
+      data: { totalAmount: 135050 },
+    });
 
     const updated = await prisma.cart.findUnique({ where: { id: cart.id } });
-    expect(updated?.totalAmount).toBeCloseTo(1350.5, 2);
+    expect(updated?.totalAmount).toBe(135050);
   });
 });
 

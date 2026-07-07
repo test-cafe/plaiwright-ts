@@ -46,6 +46,7 @@ describe('GET /api/products', () => {
 
     expect(findPizzas).toHaveBeenCalledWith(
       expect.objectContaining({ query: 'pizza' }),
+      expect.any(Object),
     );
   });
 

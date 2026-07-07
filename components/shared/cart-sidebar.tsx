@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn, formatMoney } from '@/lib/utils';
 import React from 'react';
 import { WhiteBlock } from './white-block';
 import { Button } from '../ui/button';
@@ -25,7 +25,7 @@ export const CartSidebar: React.FC<Props> = ({
     <WhiteBlock className={cn('p-6 sticky top-4', className)}>
       <div className="flex flex-col gap-1">
         <span className="text-xl">Total:</span>
-        <span data-testid="cart-total" className="text-4xl font-extrabold">${totalPrice.toFixed(2)}</span>
+        <span data-testid="cart-total" className="text-4xl font-extrabold">{formatMoney(totalPrice)}</span>
       </div>
 
       <div className="flex my-4">
@@ -34,7 +34,7 @@ export const CartSidebar: React.FC<Props> = ({
           <div className="flex-1 border-b border-dashed border-b-neutral-200 relative -top-1 mx-2" />
         </span>
 
-        <span className="font-bold text-lg">${totalAmount.toFixed(2)}</span>
+        <span className="font-bold text-lg">{formatMoney(totalAmount)}</span>
       </div>
 
       <div className="flex my-4">
@@ -43,7 +43,7 @@ export const CartSidebar: React.FC<Props> = ({
           <div className="flex-1 border-b border-dashed border-b-neutral-200 relative -top-1 mx-2" />
         </span>
 
-        <span className="font-bold text-lg">${vatPrice.toFixed(2)}</span>
+        <span className="font-bold text-lg">{formatMoney(vatPrice)}</span>
       </div>
 
       <div className="flex my-4">
@@ -52,7 +52,7 @@ export const CartSidebar: React.FC<Props> = ({
           <div className="flex-1 border-b border-dashed border-b-neutral-200 relative -top-1 mx-2" />
         </span>
 
-        <span className="font-bold text-lg">${deliveryPrice.toFixed(2)}</span>
+        <span className="font-bold text-lg">{formatMoney(deliveryPrice)}</span>
       </div>
 
       <Button

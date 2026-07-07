@@ -18,12 +18,17 @@ export interface GetSearchParams {
 }
 
 const DEFAULT_MIN_PRICE = 0;
-const DEFAULT_MAX_PRICE = 100;
+const DEFAULT_MAX_PRICE = 10000;
 const DEFAULT_LIMIT = 12;
 const DEFAULT_PAGE = 1;
 
 function parseIdList(raw: string | undefined): number[] | undefined {
   return raw?.split(',').map(Number);
+}
+
+function parseDollarParamAsCents(raw: string | undefined, fallback: number): number {
+  if (!raw) return fallback;
+  return Math.round(Number(raw) * 100) || fallback;
 }
 
 export function parseSearchParams(params: GetSearchParams): PizzaFilter {
@@ -32,8 +37,8 @@ export function parseSearchParams(params: GetSearchParams): PizzaFilter {
     ingredientIds: parseIdList(params.ingredients),
     sizes: parseIdList(params.sizes),
     pizzaTypes: parseIdList(params.pizzaTypes),
-    minPrice: Number(params.priceFrom) || DEFAULT_MIN_PRICE,
-    maxPrice: Number(params.priceTo) || DEFAULT_MAX_PRICE,
+    minPrice: parseDollarParamAsCents(params.priceFrom, DEFAULT_MIN_PRICE),
+    maxPrice: parseDollarParamAsCents(params.priceTo, DEFAULT_MAX_PRICE),
     page: Number(params.page || DEFAULT_PAGE),
     limit: Number(params.limit || DEFAULT_LIMIT),
     orderBy: params.sortBy === 'rating' ? 'createdAt-asc' : 'id-desc',

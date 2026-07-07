@@ -41,17 +41,17 @@ describe('Cart DB — concurrent quantity updates', () => {
     expect(cartItems.every((item) => item.quantity > 0)).toBe(true);
   });
 
-  it('concurrent totalAmount raw SQL updates do not corrupt the value (float8 cast)', async () => {
+  it('concurrent totalAmount updates keep integer cents valid', async () => {
     const cart = await cartFactory.buildAnonymous();
 
     await Promise.all([
-      prisma.$executeRaw`UPDATE "Cart" SET "totalAmount" = ${1299.5}::float8 WHERE id = ${cart.id}`,
-      prisma.$executeRaw`UPDATE "Cart" SET "totalAmount" = ${1499.0}::float8 WHERE id = ${cart.id}`,
+      prisma.cart.update({ where: { id: cart.id }, data: { totalAmount: 129950 } }),
+      prisma.cart.update({ where: { id: cart.id }, data: { totalAmount: 149900 } }),
     ]);
 
     const updated = await prisma.cart.findUnique({ where: { id: cart.id } });
     expect(updated!.totalAmount).toBeGreaterThan(0);
-    expect([1299.5, 1499.0]).toContain(Number(updated!.totalAmount.toFixed(1)));
+    expect([129950, 149900]).toContain(updated!.totalAmount);
   });
 
   it('quantity never goes negative from a concurrent delete then update race', async () => {

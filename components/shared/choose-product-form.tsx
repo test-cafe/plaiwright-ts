@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@/lib/utils';
+import { cn, formatMoney } from '@/lib/utils';
 import React from 'react';
 import { Button } from '../ui/button';
 import { Title } from './title';
@@ -69,7 +69,7 @@ export const ChooseProductForm: React.FC<Props> = ({
           onClick={handleClickAdd}
           data-testid="add-to-cart-button"
           className="h-[55px] px-10 text-base rounded-[18px] w-full mt-10">
-          Add to cart for ${productPrice}
+          Add to cart for {formatMoney(productPrice)}
         </Button>
       </div>
     </div>

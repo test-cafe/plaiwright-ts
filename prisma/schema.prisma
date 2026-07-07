@@ -73,7 +73,7 @@ model Ingredient {
   id Int @id @default(autoincrement())
 
   name     String
-  price    Float
+  price    Int
   imageUrl String
 
   cartItems CartItem[]
@@ -91,7 +91,7 @@ model Cart {
 
   tokenId String?
 
-  totalAmount Float @default(0)
+  totalAmount Int @default(0)
 
   items CartItem[]
 
@@ -128,7 +128,7 @@ model Order {
   items Json?
 
   status      OrderStatus @default(PENDING)
-  totalAmount Float
+  totalAmount Int
   paymentId   String?
 
   fullName String

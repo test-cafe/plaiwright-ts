@@ -2,7 +2,7 @@ import React from 'react';
 import { CartDrawer } from './cart-drawer';
 import { Button } from '../ui/button';
 import { ArrowRight, ShoppingCart } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatMoney } from '@/lib/utils';
 import { useCart } from '@/hooks/use-cart';
 
 interface Props {
@@ -37,7 +37,7 @@ export const CartButton: React.FC<Props> = ({ className, compact }) => {
         loading={loading}
         data-testid="cart-button"
         className={cn('group relative', { 'w-[105px]': loading }, className)}>
-        <b>${totalAmount}</b>
+        <b>{formatMoney(totalAmount)}</b>
         <span className="h-full w-[1px] bg-white/30 mx-3" />
         <div className="flex items-center gap-1 transition duration-300 group-hover:opacity-0">
           <ShoppingCart className="h-4 w-4 relative" strokeWidth={2} />

@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn, formatMoney } from '@/lib/utils';
 import { CircleCheck } from 'lucide-react';
 import React from 'react';
 import Image from 'next/image';
@@ -32,7 +32,7 @@ export const Ingredient: React.FC<Props> = ({
       {active && <CircleCheck className="absolute top-2 right-2 text-primary" />}
       <Image width={110} height={110} src={imageUrl} alt={name} />
       <span className="text-xs mb-1">{name}</span>
-      <span className="font-bold">${price}</span>
+      <span className="font-bold">{formatMoney(price)}</span>
     </div>
   );
 };
