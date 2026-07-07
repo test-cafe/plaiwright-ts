@@ -123,7 +123,7 @@ Quantity changes call `PATCH /api/cart/[id]` (debounced 200ms). Removals call `D
 
 **How it works:**
 
-Auth is handled by **NextAuth v5** (`lib/auth-options.ts`). Three providers: Credentials, GitHub, Google.
+Auth is handled by **NextAuth.js v4** (`lib/auth-options.ts`). Three providers: Credentials, GitHub, Google.
 
 - **Register** — Server action hashes the password with bcrypt (10 rounds), creates a `User` record, and sends a verification email.
 - **Login** — Credentials provider fetches the user by email, compares bcrypt hash, returns the user object. The `jwt` callback adds `id` and `role` to the token; the `session` callback exposes them to the client.

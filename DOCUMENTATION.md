@@ -75,7 +75,6 @@ graph TB
         Google["Google OAuth"]
         GitHub["GitHub OAuth"]
         UploadThing["UploadThing\n(File Storage)"]
-        Dadata["Dadata\n(Address Autocomplete)"]
     end
 
     Browser -->|HTTP / WebSocket| NextApp
@@ -91,7 +90,6 @@ graph TB
     RCC -->|OAuth redirect| Google
     RCC -->|OAuth redirect| GitHub
     RCC -->|Upload files| UploadThing
-    RCC -->|Address lookup| Dadata
 ```
 
 ### Request Lifecycle
@@ -121,7 +119,7 @@ sequenceDiagram
     DB-->>API: Data
     API-->>B: JSON response
 
-    B->>Ext: External API call (Stripe, Dadata)
+    B->>Ext: External API call (Stripe)
     Ext-->>B: Response
 ```
 
@@ -614,7 +612,6 @@ graph TD
     CartLayout --> CartPage["Cart Page (/cart)"]
     CartPage --> CartSidebar["CartSidebar"]
     CartPage --> FormInput["FormInput (personal info)"]
-    CartPage --> AddressInput["AddressInput (Dadata)"]
 ```
 
 ### Shared Component Catalogue
