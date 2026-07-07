@@ -22,6 +22,9 @@
 next-pizza-loom-script*.md
 figma-prompt.md
 interview-prep.md
+ARCHITECTURE.md
+TEST_PLAN.md
+.claude/
 
 # debug
 npm-debug.log*
