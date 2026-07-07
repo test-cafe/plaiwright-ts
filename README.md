@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Next Pizza
 
-## Getting Started
+A production-style pizza ordering app built on **Next.js 16 (App Router)**, **TypeScript**, **Prisma / Postgres**, and **Stripe**. Deployed on Vercel with a Neon Postgres backend, tested with Vitest and Playwright.
 
-First, run the development server:
+**Live demo:** <https://next-pizza-pw-ts.vercel.app>
+
+## Demo credentials
+
+| Role  | Email             | Password |
+|-------|-------------------|----------|
+| User  | `user@test.ru`    | `111111` |
+| Admin | `admin@test.ru`   | `111111` — grants access to `/dashboard` |
+
+## Try it out
+
+1. Browse pizzas on the homepage, filter by size / dough / ingredients / price.
+2. Click a product to open the intercepted-route modal, customise, add to cart.
+3. Check out with the Stripe test card `4242 4242 4242 4242`, any future date, any CVC.
+4. Log in as admin to see the CRUD dashboard (products, categories, ingredients, orders, users).
+
+---
+
+## What's interesting in this codebase
+
+- **Intercepted parallel routes** for the product modal — `app/(root)/@modal/(.)product/[id]/page.tsx` renders a Dialog when navigated from a card, while `app/(root)/product/[id]/page.tsx` handles direct URL access.
+- **Cart merge on login** — anonymous carts (tracked by `cartToken` cookie) merge into the user's cart on sign-in, with duplicate protection.
+- **Money stored as integer cents** — matches Stripe's amount format and eliminates float-precision surprises.
+- **Repository pattern** rolled out across Prisma call sites so data access is testable and swappable.
+- **Auth** via NextAuth.js with Credentials, Google, and GitHub providers; JWT-backed sessions expose `role` for server-side guards.
+- **Server Actions for mutations** from forms, thin API routes for cart CRUD and Stripe webhooks.
+
+## Tech stack
+
+Next.js 16 · React 19 · TypeScript · Tailwind · Radix UI · Prisma · PostgreSQL · NextAuth.js · Stripe · Zustand · React Hook Form · Zod · Resend · Vercel · Neon
+
+## Testing
+
+The test story is the differentiator worth clicking on:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run test              # Vitest — unit + integration
+npm run test:unit         # pure logic
+npm run test:integration  # real Postgres via Docker (npm run test:db:up first)
+npm run test:e2e          # Playwright, all suites
+npm run test:e2e:smoke    # @smoke-tagged happy paths
+npm run test:e2e:a11y     # @a11y-tagged accessibility checks
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Structure:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+tests/
+  e2e/           Playwright, tagged @smoke / @regression / @a11y
+  integration/   Vitest + real test DB, cleanDb() helper between tests
+  unit/          Pure utility tests
+  factories/     Faker-based data builders
+  helpers/       Shared test utilities
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+For the full test plan and QA onboarding, see [`TEST_PLAN.md`](./TEST_PLAN.md) and [`ONBOARDING_TESTERS.md`](./ONBOARDING_TESTERS.md).
 
-## Learn More
+## Architecture
 
-To learn more about Next.js, take a look at the following resources:
+- [`ARCHITECTURE.md`](./ARCHITECTURE.md) — high-level system design.
+- [`ONBOARDING.md`](./ONBOARDING.md) — engineer onboarding walkthrough.
+- [`DOCUMENTATION.md`](./DOCUMENTATION.md) — feature-level documentation.
+- [`CLAUDE.md`](./CLAUDE.md) — codebase conventions and non-obvious behavior.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Running locally
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+```bash
+git clone https://github.com/test-cafe/plaiwright-ts.git
+cd plaiwright-ts
+npm install
+cp .env.example .env.local     # fill in DATABASE_URL, NEXTAUTH_SECRET, Stripe keys, etc.
+npm run prisma:migrate         # apply schema
+npm run prisma:seed            # seed products, categories, ingredients, test users
+npm run dev                    # http://localhost:3000
+```
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+See [`ONBOARDING.md`](./ONBOARDING.md) for a full walkthrough including Neon and Docker test-DB setup.
