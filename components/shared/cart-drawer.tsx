@@ -18,26 +18,28 @@ import { Title } from './title';
 import clsx from 'clsx';
 import Link from 'next/link';
 import { useCart } from '@/hooks/use-cart';
+import { formatMoney } from '@/lib/utils';
 
 export const CartDrawer: React.FC<React.PropsWithChildren> = ({ children }) => {
   const [redirecting, setRedirecting] = React.useState(false);
 
   const { totalAmount, items, loading } = useCart(true);
+  const hasItems = items.length > 0;
 
   return (
     <Sheet>
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent data-testid="cart-drawer" className="flex flex-col justify-between pb-0 bg-[#F4F1EE] sm:max-w-lg">
-        <div className={clsx('flex flex-col h-full', !totalAmount && 'justify-center')}>
-          <SheetHeader className={clsx(!totalAmount && 'sr-only')}>
+        <div className={clsx('flex flex-col h-full', !hasItems && 'justify-center')}>
+          <SheetHeader className={clsx(!hasItems && 'sr-only')}>
             <SheetTitle data-testid="cart-item-count">
-              {totalAmount > 0
+              {hasItems
                 ? <>In cart: <span className="font-bold">{items.length} items</span></>
                 : 'Shopping Cart'}
             </SheetTitle>
           </SheetHeader>
 
-          {!totalAmount && (
+          {!hasItems && (
             <div data-testid="cart-empty" className="flex flex-col items-center justify-center w-full max-w-[288px] mx-auto">
               <Image src="/assets/images/empty-box.png" alt="Empty cart" width={120} height={120} />
               <Title size="sm" text="Cart is empty" className="text-center font-bold my-2" />
@@ -54,7 +56,7 @@ export const CartDrawer: React.FC<React.PropsWithChildren> = ({ children }) => {
             </div>
           )}
 
-          {totalAmount > 0 && (
+          {hasItems && (
             <>
               <div className="-mx-6 mt-5 overflow-auto flex-1">
                 {items.map((item) => (
@@ -81,7 +83,7 @@ export const CartDrawer: React.FC<React.PropsWithChildren> = ({ children }) => {
                       <div className="flex-1 border-b border-dashed border-b-neutral-200 relative -top-1 mx-2" />
                     </span>
 
-                    <span className="font-bold text-lg">${totalAmount}</span>
+                    <span className="font-bold text-lg">{formatMoney(totalAmount)}</span>
                   </div>
 
                   <Link href="/cart" data-testid="checkout-button">

@@ -27,7 +27,7 @@ import React from "react";
 import toast from "react-hot-toast";
 
 const VAT = 15;
-const DELIVERY_PRICE = 5;
+const DELIVERY_PRICE = 500;
 
 export default function CartPage() {
   const { totalAmount, items, loading, updateItemQuantity, removeCartItem } =
@@ -113,7 +113,7 @@ export default function CartPage() {
               <WhiteBlock
                 title="1. Cart"
                 endAdornment={
-                  totalAmount > 0 && (
+                  items.length > 0 && (
                     <button
                       type="button"
                       className="flex items-center gap-3 text-gray-400 hover:text-gray-600"
@@ -145,7 +145,7 @@ export default function CartPage() {
                       ))}
                 </div>
 
-                {!totalAmount && (
+                {!items.length && !loading && (
                   <p data-testid="cart-empty" className="text-center text-gray-600 p-10">
                     Cart is empty
                   </p>
@@ -154,7 +154,7 @@ export default function CartPage() {
 
               <WhiteBlock
                 title="2. Personal Information"
-                className={!totalAmount ? "opacity-50 pointer-events-none" : ""}
+                className={!items.length ? "opacity-50 pointer-events-none" : ""}
                 contentClassName="p-8"
               >
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -197,7 +197,7 @@ export default function CartPage() {
               </WhiteBlock>
 
               <WhiteBlock
-                className={!totalAmount ? "opacity-50 pointer-events-none" : ""}
+                className={!items.length ? "opacity-50 pointer-events-none" : ""}
                 title="3. Delivery Address"
                 contentClassName="p-8"
               >

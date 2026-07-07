@@ -40,7 +40,9 @@ describe('GET /api/cart', () => {
       await assertOkResponse(response, schemas.cart);
       expect(prisma.cart.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { OR: expect.arrayContaining([{ tokenId: ANON_CART_TOKEN }]) },
+          where: expect.objectContaining({
+            OR: expect.arrayContaining([{ tokenId: ANON_CART_TOKEN }]),
+          }),
         }),
       );
     });
@@ -67,7 +69,7 @@ describe('GET /api/cart', () => {
       await assertOkResponse(response, schemas.cart);
       expect(prisma.cart.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { OR: expect.arrayContaining([{ userId: REGULAR_USER_DB_ID }]) },
+          where: { userId: REGULAR_USER_DB_ID },
         }),
       );
     });

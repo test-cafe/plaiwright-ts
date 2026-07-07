@@ -8,9 +8,9 @@ import { sendEmail } from '@/lib/send-email';
 import { OrderStatus, Prisma } from '@prisma/client';
 import { hashSync } from 'bcrypt';
 import { randomBytes } from 'crypto';
-import { cookies } from 'next/headers';
 import { createPayment } from '@/lib/create-payment';
 import { revalidatePath } from 'next/cache';
+import { formatMoney } from '@/lib/utils';
 
 export async function registerUser(body: Prisma.UserCreateInput) {
   try {
@@ -69,8 +69,6 @@ export async function createOrder(data: TFormOrderData) {
       throw new Error('Please sign in to place an order');
     }
     const userId = Number(currentUser.id);
-    const cookieStore = await cookies();
-    const cartToken = cookieStore.get('cartToken')?.value;
 
     const userCart = await prisma.cart.findFirst({
       include: {
@@ -86,12 +84,7 @@ export async function createOrder(data: TFormOrderData) {
           },
         },
       },
-      where: {
-        OR: [
-          { userId },
-          ...(cartToken ? [{ tokenId: cartToken }] : []),
-        ],
-      },
+      where: { userId },
     });
 
     if (!userCart) {
@@ -102,30 +95,28 @@ export async function createOrder(data: TFormOrderData) {
       return;
     }
 
-    // Prisma 5.x bug: whole-number Float values are encoded as int4 in binary protocol,
-    // causing PostgreSQL 22P03. Use $queryRaw with explicit ::float8 and ::jsonb casts.
-    const itemsJson = JSON.stringify(JSON.parse(JSON.stringify(userCart.items)));
-    const [order] = await prisma.$queryRaw<{ id: number; totalAmount: number }[]>`
-      INSERT INTO "Order" ("userId", "fullName", email, phone, address, comment, "totalAmount", status, items, "createdAt", "updatedAt")
-      VALUES (
-        ${userId},
-        ${data.firstName + ' ' + data.lastName},
-        ${data.email},
-        ${data.phone},
-        ${data.address},
-        ${data.comment ?? null},
-        ${userCart.totalAmount}::float8,
-        ${OrderStatus.PENDING}::"OrderStatus",
-        ${itemsJson}::jsonb,
-        NOW(),
-        NOW()
-      )
-      RETURNING id, "totalAmount"
-    `;
+    const order = await prisma.order.create({
+      data: {
+        userId,
+        fullName: data.firstName + ' ' + data.lastName,
+        email: data.email,
+        phone: data.phone,
+        address: data.address,
+        comment: data.comment,
+        totalAmount: userCart.totalAmount,
+        status: OrderStatus.PENDING,
+        items: JSON.parse(JSON.stringify(userCart.items)),
+      },
+      select: {
+        id: true,
+        totalAmount: true,
+      },
+    });
 
-    await prisma.$executeRaw`
-      UPDATE "Cart" SET "totalAmount" = ${0}::float8, "updatedAt" = NOW() WHERE id = ${userCart.id}
-    `;
+    await prisma.cart.update({
+      where: { id: userCart.id },
+      data: { totalAmount: 0 },
+    });
 
     await prisma.cartItem.deleteMany({
       where: {
@@ -153,7 +144,7 @@ export async function createOrder(data: TFormOrderData) {
     const html = `
       <h1>Order #${order?.id}</h1>
 
-      <p>Please pay for your order of ${order?.totalAmount}. Click <a href="${paymentData.confirmation.confirmation_url}">here</a> to complete the payment.</p>
+      <p>Please pay for your order of ${formatMoney(order.totalAmount)}. Click <a href="${paymentData.confirmation.confirmation_url}">here</a> to complete the payment.</p>
     `;
 
     if (userCart.user?.email) {

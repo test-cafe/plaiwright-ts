@@ -14,12 +14,11 @@ async function resolveUserId(sessionUserId: string | undefined): Promise<number 
 
 async function updateCartTotalAmount(userId: number | undefined, cartToken: string | undefined) {
   const userCart = await prisma.cart.findFirst({
-    where: {
-      OR: [
-        ...(userId ? [{ userId }] : []),
-        ...(cartToken ? [{ tokenId: cartToken }] : []),
-      ],
-    },
+    where: userId
+      ? { userId }
+      : cartToken
+        ? { tokenId: cartToken }
+        : { id: -1 },
     include: {
       items: {
         orderBy: { createdAt: 'desc' },
@@ -35,13 +34,9 @@ async function updateCartTotalAmount(userId: number | undefined, cartToken: stri
 
   const totalAmount = userCart.items.reduce((acc, item) => acc + calcCartItemTotalAmount(item), 0);
 
-  await prisma.$executeRaw`
-    UPDATE "Cart" SET "totalAmount" = ${totalAmount}::float8, "updatedAt" = NOW()
-    WHERE id = ${userCart.id}
-  `;
-
-  return await prisma.cart.findFirst({
+  return await prisma.cart.update({
     where: { id: userCart.id },
+    data: { totalAmount },
     include: {
       items: {
         orderBy: { createdAt: 'desc' },

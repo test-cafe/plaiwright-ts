@@ -62,23 +62,17 @@ beforeEach(() => {
 
 describe('GET /api/cart — post-login cart access', () => {
   describe('cart lookup query', () => {
-    it('includes both userId and tokenId in the OR clause when a cartToken cookie is present', async () => {
+    it('queries by userId only when authenticated, ignoring any stale cartToken cookie', async () => {
       setSession(vi.mocked(getUserSession), mockRegularUser);
       vi.mocked(prisma.user.findUnique).mockResolvedValue(buildUserRecord({ id: REGULAR_USER_DB_ID }));
       vi.mocked(prisma.cart.findFirst).mockResolvedValue(anonymousCart);
 
       const response = await GET(request.get(urls.cart()).cartToken(ANON_CART_TOKEN).build());
-      const body = await assertOkResponse(response, schemas.cart);
+      await assertOkResponse(response, schemas.cart);
 
-      expect(body.items).toHaveLength(1);
       expect(prisma.cart.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: expect.objectContaining({
-            OR: expect.arrayContaining([
-              { userId: REGULAR_USER_DB_ID },
-              { tokenId: ANON_CART_TOKEN },
-            ]),
-          }),
+          where: { userId: REGULAR_USER_DB_ID },
         }),
       );
     });
@@ -94,7 +88,7 @@ describe('GET /api/cart — post-login cart access', () => {
       expect(body.items).toEqual([]);
       expect(prisma.cart.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { OR: [{ userId: REGULAR_USER_DB_ID }] },
+          where: { userId: REGULAR_USER_DB_ID },
         }),
       );
     });

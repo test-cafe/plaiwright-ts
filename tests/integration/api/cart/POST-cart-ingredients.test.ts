@@ -16,8 +16,8 @@ import {
 vi.mock('@/lib/prisma', () => ({
   prisma: {
     user: { findUnique: vi.fn() },
-    cart: { findFirst: vi.fn() },
-    cartItem: { findFirst: vi.fn(), create: vi.fn(), update: vi.fn() },
+    cart: { findFirst: vi.fn(), create: vi.fn(), update: vi.fn() },
+    cartItem: { findFirst: vi.fn(), findMany: vi.fn(), create: vi.fn(), update: vi.fn() },
     $queryRaw: vi.fn(),
     $executeRaw: vi.fn(),
   },
@@ -50,7 +50,10 @@ const postCart = (body: object) =>
 beforeEach(() => {
   vi.clearAllMocks();
   clearSession(vi.mocked(getUserSession));
-  vi.mocked(prisma.$executeRaw).mockResolvedValue(1);
+  vi.mocked(prisma.cart.update).mockImplementation(async ({ data }) => ({
+    ...buildCartWithDeepItems({ id: CART_ID, tokenId: ANON_CART_TOKEN }),
+    totalAmount: data.totalAmount as number,
+  }));
 });
 
 describe('POST /api/cart — ingredient handling', () => {
@@ -74,7 +77,7 @@ describe('POST /api/cart — ingredient handling', () => {
         .mockResolvedValueOnce(baseCart)
         .mockResolvedValueOnce(cartWithItem)
         .mockResolvedValueOnce(cartWithItem);
-      vi.mocked(prisma.cartItem.findFirst).mockResolvedValue(null);
+      vi.mocked(prisma.cartItem.findMany).mockResolvedValue([]);
       vi.mocked(prisma.cartItem.create).mockResolvedValue(buildCartItemRecord({ cartId: CART_ID }));
 
       const response = await POST(
@@ -118,7 +121,7 @@ describe('POST /api/cart — ingredient handling', () => {
         .mockResolvedValueOnce(baseCart)
         .mockResolvedValueOnce(cartWithItem)
         .mockResolvedValueOnce(cartWithItem);
-      vi.mocked(prisma.cartItem.findFirst).mockResolvedValue(null);
+      vi.mocked(prisma.cartItem.findMany).mockResolvedValue([]);
       vi.mocked(prisma.cartItem.create).mockResolvedValue(buildCartItemRecord({ id: 2, cartId: CART_ID }));
 
       await POST(
@@ -145,7 +148,7 @@ describe('POST /api/cart — ingredient handling', () => {
         .mockResolvedValueOnce(baseCart)
         .mockResolvedValueOnce(emptyCart)
         .mockResolvedValueOnce(emptyCart);
-      vi.mocked(prisma.cartItem.findFirst).mockResolvedValue(null);
+      vi.mocked(prisma.cartItem.findMany).mockResolvedValue([]);
       vi.mocked(prisma.cartItem.create).mockResolvedValue(buildCartItemRecord({ id: 3, cartId: CART_ID }));
 
       const response = await POST(postCart({ productItemId: PRODUCT_ITEM_ID, quantity: 1 }));
@@ -189,7 +192,9 @@ describe('POST /api/cart — ingredient handling', () => {
         .mockResolvedValueOnce(baseCart)
         .mockResolvedValueOnce(cartAfterMerge)
         .mockResolvedValueOnce(cartAfterMerge);
-      vi.mocked(prisma.cartItem.findFirst).mockResolvedValue(existingItem);
+      vi.mocked(prisma.cartItem.findMany).mockResolvedValue([
+        { ...existingItem, ingredients: [{ id: CHEESE_ID }] },
+      ] as never);
       vi.mocked(prisma.cartItem.update).mockResolvedValue({ ...existingItem, quantity: 3 });
 
       await POST(
@@ -211,7 +216,7 @@ describe('POST /api/cart — ingredient handling', () => {
         .mockResolvedValueOnce(baseCart)
         .mockResolvedValueOnce(emptyCart)
         .mockResolvedValueOnce(emptyCart);
-      vi.mocked(prisma.cartItem.findFirst).mockResolvedValue(null);
+      vi.mocked(prisma.cartItem.findMany).mockResolvedValue([]);
       vi.mocked(prisma.cartItem.create).mockResolvedValue(buildCartItemRecord({ id: 4, cartId: CART_ID }));
 
       const response = await POST(postCart({ productItemId: PRODUCT_ITEM_ID, quantity: 1 }));

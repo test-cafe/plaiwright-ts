@@ -18,12 +18,13 @@ export async function GET(req: NextRequest) {
     }
 
     const userCart = await prisma.cart.findFirst({
-      where: {
-        OR: [
-          ...(userId ? [{ userId }] : []),
-          ...(cartToken ? [{ tokenId: cartToken }] : []),
-        ],
-      },
+      where: userId
+        ? { userId }
+        : {
+            OR: [
+              ...(cartToken ? [{ tokenId: cartToken }] : []),
+            ],
+          },
       include: {
         items: {
           orderBy: {
@@ -50,23 +51,20 @@ export async function GET(req: NextRequest) {
 
 async function findOrCreateCart(userId: number | undefined, cartToken: string | undefined) {
   let userCart = await prisma.cart.findFirst({
-    where: {
-      OR: [
-        ...(userId ? [{ userId }] : []),
-        ...(cartToken ? [{ tokenId: cartToken }] : []),
-      ],
-    },
+    where: userId
+      ? { userId }
+      : cartToken
+        ? { tokenId: cartToken }
+        : { id: -1 },
   });
 
   if (!userCart) {
-    // Prisma 5.x bug: includes Float default value in binary protocol, causing PostgreSQL 22P03.
-    // Use raw INSERT so the DB applies the DEFAULT directly without Prisma encoding it.
-    const [created] = await prisma.$queryRaw<{ id: number; totalAmount: number; tokenId: string | null; userId: number | null; createdAt: Date; updatedAt: Date }[]>`
-      INSERT INTO "Cart" ("tokenId", "userId", "createdAt", "updatedAt")
-      VALUES (${cartToken ?? null}, ${userId ?? null}, NOW(), NOW())
-      RETURNING *
-    `;
-    userCart = created;
+    userCart = await prisma.cart.create({
+      data: {
+        tokenId: userId ? null : cartToken,
+        userId,
+      },
+    });
   }
 
   return userCart;
@@ -106,15 +104,9 @@ async function getCartTotalAmount(cartId: number): Promise<number> {
 }
 
 async function updateCartTotalAmount(cartId: number, totalAmount: number) {
-  // Prisma 5.x bug: whole-number Float values are encoded as int4 in binary protocol,
-  // causing PostgreSQL 22P03. Use raw SQL with explicit ::float8 cast to bypass it.
-  await prisma.$executeRaw`
-    UPDATE "Cart" SET "totalAmount" = ${totalAmount}::float8, "updatedAt" = NOW()
-    WHERE id = ${cartId}
-  `;
-
-  const updatedCart = await prisma.cart.findFirst({
+  const updatedCart = await prisma.cart.update({
     where: { id: cartId },
+    data: { totalAmount },
     include: {
       items: {
         orderBy: { createdAt: 'desc' },
@@ -150,14 +142,21 @@ export async function POST(req: NextRequest) {
 
     let userCart = await findOrCreateCart(userId, cartToken);
 
-    const findCartItem = await prisma.cartItem.findFirst({
+    const wantedIds = [...(data.ingredientsIds ?? [])].sort((a, b) => a - b);
+
+    const candidates = await prisma.cartItem.findMany({
       where: {
         cartId: userCart.id,
         productItemId: data.productItemId,
-        ...(data.ingredientsIds?.length
-          ? { ingredients: { every: { id: { in: data.ingredientsIds } } } }
-          : {}),
       },
+      include: { ingredients: { select: { id: true } } },
+    });
+
+    const findCartItem = candidates.find((item) => {
+      const have = item.ingredients.map((i) => i.id).sort((a, b) => a - b);
+      return (
+        have.length === wantedIds.length && have.every((id, idx) => id === wantedIds[idx])
+      );
     });
     if (findCartItem) {
       await prisma.cartItem.update({
@@ -199,12 +198,13 @@ export async function DELETE(req: NextRequest) {
     }
 
     const userCart = await prisma.cart.findFirst({
-      where: {
-        OR: [
-          ...(userId ? [{ userId }] : []),
-          ...(cartToken ? [{ tokenId: cartToken }] : []),
-        ],
-      },
+      where: userId
+        ? { userId }
+        : {
+            OR: [
+              ...(cartToken ? [{ tokenId: cartToken }] : []),
+            ],
+          },
     });
 
     if (!userCart) {
