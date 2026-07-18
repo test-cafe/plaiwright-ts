@@ -3,6 +3,7 @@ import { useTestDb, cleanDb } from '@/tests/helpers/db-setup';
 import { createUserFactory } from '@/tests/fixtures/db/users';
 import { registerUser, createUser, updateUser, deleteUser } from '@/app/actions';
 import { revalidatePath } from 'next/cache';
+import { sendEmail } from '@/lib/send-email';
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 vi.mock('next/headers', () => ({ cookies: vi.fn(() => ({ get: vi.fn(() => undefined) })) }));
@@ -40,11 +41,33 @@ describe('registerUser', () => {
     ).rejects.toThrow('User already exists');
   });
 
-  it('sets verified date on registration', async () => {
-    await registerUser({ email: 'verified@test.com', password: 'pass', fullName: 'V User' });
+  it('leaves the new user unverified and emails a verification link', async () => {
+    await registerUser({ email: 'unverified@test.com', password: 'pass', fullName: 'V User' });
 
-    const user = await prisma.user.findFirst({ where: { email: 'verified@test.com' } });
-    expect(user?.verified).not.toBeNull();
+    const user = await prisma.user.findFirst({ where: { email: 'unverified@test.com' } });
+    expect(user?.verified).toBeNull();
+
+    const verificationCode = await prisma.verificationCode.findFirst({ where: { userId: user!.id } });
+    expect(verificationCode).not.toBeNull();
+
+    expect(sendEmail).toHaveBeenCalledWith(
+      'unverified@test.com',
+      expect.stringContaining('Verify'),
+      expect.stringContaining(verificationCode!.code),
+    );
+  });
+
+  it('resends the verification code when an unverified user registers again', async () => {
+    const user = await userFactory.buildUnverified({ email: 'retry@test.com' });
+    const staleCode = await prisma.verificationCode.create({
+      data: { userId: user.id, code: 'stale-code', expiresAt: new Date() },
+    });
+
+    await registerUser({ email: 'retry@test.com', password: 'pass', fullName: 'Retry User' });
+
+    const freshCode = await prisma.verificationCode.findFirst({ where: { userId: user.id } });
+    expect(freshCode?.code).not.toBe(staleCode.code);
+    expect(sendEmail).toHaveBeenCalledOnce();
   });
 });
 

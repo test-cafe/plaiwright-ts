@@ -33,7 +33,11 @@ export const LoginForm: React.FC<Props> = ({ onClose }) => {
       });
 
       if (!resp?.ok) {
-        return toast.error('Invalid E-Mail or password', {
+        // NextAuth reports errors thrown in authorize() verbatim; null returns
+        // surface as the generic 'CredentialsSignin' code.
+        const message =
+          resp?.error && resp.error !== 'CredentialsSignin' ? resp.error : 'Invalid E-Mail or password';
+        return toast.error(message, {
           icon: '❌',
         });
       }

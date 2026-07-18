@@ -53,6 +53,10 @@ export const authOptions: NextAuthOptions = {
 
         if (!isPasswordValid) return null;
 
+        if (!findUser.verified) {
+          throw new Error('Please verify your email before signing in');
+        }
+
         return {
           id: String(findUser.id),
           email: findUser.email,
@@ -90,6 +94,9 @@ export const authOptions: NextAuthOptions = {
             data: {
               provider: account?.provider,
               providerId: account?.providerAccountId,
+              // The OAuth provider vouches for the email, so an unverified
+              // credentials account becomes verified on first OAuth sign-in.
+              verified: findUser.verified ?? new Date(),
             },
           });
           return true;

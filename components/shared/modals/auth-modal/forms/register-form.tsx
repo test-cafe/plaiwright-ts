@@ -34,8 +34,9 @@ export const RegisterForm: React.FC<Props> = ({ onClose, onClickLogin }) => {
         password: data.password,
       });
 
-      toast.success('Registration successful! You can now sign in.', {
-        icon: '✅',
+      toast.success('Registration successful! Check your email to verify your account.', {
+        icon: '📧',
+        duration: 6000,
       });
 
       onClose?.();

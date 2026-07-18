@@ -6,6 +6,7 @@ import { request } from '@/tests/helpers/api-builder';
 import { urls } from '@/tests/helpers/url-builder';
 import { assertOkResponse, assertErrorResponse, schemas } from '@/tests/helpers/response-validator';
 import { buildUserRecord } from '@/tests/fixtures/mock-prisma-records';
+import { sendVerificationEmail } from '@/lib/send-verification-email';
 
 const { HASHED_PASSWORD } = vi.hoisted(() => ({ HASHED_PASSWORD: 'hashed-password' }));
 
@@ -26,6 +27,10 @@ vi.mock('bcrypt', async (importOriginal) => {
   const actual = await importOriginal<typeof import('bcrypt')>();
   return { ...actual, hashSync: vi.fn(() => HASHED_PASSWORD) };
 });
+
+vi.mock('@/lib/send-verification-email', () => ({
+  sendVerificationEmail: vi.fn(),
+}));
 
 const NEW_USER_ID = 1;
 const NEW_USER_EMAIL = 'new@test.com';
@@ -63,6 +68,24 @@ describe('POST /api/auth/register', () => {
         }),
       );
     });
+
+    it('does not mark the user verified at signup', async () => {
+      await POST(postRegister(validPayload));
+
+      expect(prisma.user.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.not.objectContaining({ verified: expect.anything() }),
+        }),
+      );
+    });
+
+    it('sends a verification email', async () => {
+      await POST(postRegister(validPayload));
+
+      expect(sendVerificationEmail).toHaveBeenCalledWith(
+        expect.objectContaining({ id: NEW_USER_ID, email: NEW_USER_EMAIL }),
+      );
+    });
   });
 
   describe('failure cases', () => {
@@ -82,6 +105,21 @@ describe('POST /api/auth/register', () => {
       const response = await POST(postRegister({ email: NEW_USER_EMAIL }));
 
       await assertErrorResponse(response, 400);
+    });
+  });
+
+  describe('unverified duplicate signup', () => {
+    it('resends the verification email instead of creating a user', async () => {
+      const unverified = buildUserRecord({ email: EXISTING_EMAIL, verified: null });
+      vi.mocked(prisma.user.findFirst).mockResolvedValue(unverified);
+
+      const response = await POST(
+        postRegister({ email: EXISTING_EMAIL, password: VALID_PASSWORD, fullName: 'Existing' }),
+      );
+
+      await assertOkResponse(response, schemas.registerSuccess);
+      expect(prisma.user.create).not.toHaveBeenCalled();
+      expect(sendVerificationEmail).toHaveBeenCalledWith(unverified);
     });
   });
 });

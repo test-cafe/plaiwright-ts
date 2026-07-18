@@ -9,6 +9,7 @@ import { OrderStatus, Prisma } from '@prisma/client';
 import { hashSync } from 'bcrypt';
 import { randomBytes } from 'crypto';
 import { createPayment } from '@/lib/create-payment';
+import { sendVerificationEmail } from '@/lib/send-verification-email';
 import { revalidatePath } from 'next/cache';
 import { formatMoney } from '@/lib/utils';
 
@@ -21,16 +22,23 @@ export async function registerUser(body: Prisma.UserCreateInput) {
     });
 
     if (user) {
-      throw new Error('User already exists');
+      if (user.verified) {
+        throw new Error('User already exists');
+      }
+
+      // Unverified duplicate signup: refresh the code so the user isn't stuck.
+      await sendVerificationEmail(user);
+      return;
     }
 
-    await prisma.user.create({
+    const createdUser = await prisma.user.create({
       data: {
         ...body,
         password: hashSync(body.password, 10),
-        verified: new Date(),
       },
     });
+
+    await sendVerificationEmail(createdUser);
   } catch (error) {
     logger.error({ error }, '[ACTION] registerUser failed');
     throw error;

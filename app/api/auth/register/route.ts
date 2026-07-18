@@ -1,5 +1,6 @@
 import { rateLimit } from '@/lib/rate-limit';
 import { prisma } from '@/lib/prisma';
+import { sendVerificationEmail } from '@/lib/send-verification-email';
 import { hashSync } from 'bcrypt';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -16,7 +17,15 @@ export async function POST(req: NextRequest) {
 
     const existing = await prisma.user.findFirst({ where: { email } });
     if (existing) {
-      return NextResponse.json({ message: 'Email already in use' }, { status: 409 });
+      if (existing.verified) {
+        return NextResponse.json({ message: 'Email already in use' }, { status: 409 });
+      }
+
+      // Unverified duplicate signup: refresh the code so the user isn't stuck.
+      await sendVerificationEmail(existing);
+      return NextResponse.json({
+        user: { id: existing.id, fullName: existing.fullName, email: existing.email },
+      });
     }
 
     const user = await prisma.user.create({
@@ -24,9 +33,10 @@ export async function POST(req: NextRequest) {
         fullName,
         email,
         password: hashSync(password, 10),
-        verified: new Date(),
       },
     });
+
+    await sendVerificationEmail(user);
 
     return NextResponse.json({
       user: { id: user.id, fullName: user.fullName, email: user.email },
