@@ -14,7 +14,6 @@ import { AuthModal } from './modals/auth-modal';
 import { ProfileButton } from './profile-button';
 import { useRouter, useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
-import { useCartStore } from '@/store/cart';
 
 interface Props {
   hasSearch?: boolean;
@@ -28,7 +27,6 @@ export const Header: React.FC<Props> = ({ className, hasSearch = true, hasCart =
   const mobileSearchRef = React.useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
   const router = useRouter();
-  const fetchCartItems = useCartStore((state) => state.fetchCartItems);
 
   useClickAway(mobileSearchRef, () => setMobileSearchOpen(false));
 
@@ -37,11 +35,6 @@ export const Header: React.FC<Props> = ({ className, hasSearch = true, hasCart =
 
     if (searchParams.has('verified')) {
       toastMessage = 'Email confirmed successfully!';
-    }
-
-    if (searchParams.has('paid')) {
-      toastMessage = 'Order paid successfully! Confirmation sent to your email.';
-      fetchCartItems();
     }
 
     if (toastMessage) {
@@ -63,7 +56,7 @@ export const Header: React.FC<Props> = ({ className, hasSearch = true, hasCart =
             <Image src="/logo.png" width={35} height={35} alt="Logo" />
             <div>
               <h1 className="text-2xl uppercase font-black">Next Pizza</h1>
-              <p className="text-sm text-gray-600 leading-3 hidden sm:block">it doesn't get any tastier</p>
+              <p className="text-sm text-gray-600 leading-3 hidden sm:block">it doesn&apos;t get any tastier</p>
             </div>
           </div>
         </Link>

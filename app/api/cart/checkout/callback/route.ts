@@ -58,5 +58,19 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  if (event.type === 'checkout.session.expired' || event.type === 'checkout.session.async_payment_failed') {
+    const session = event.data.object as CompletedCheckoutSession;
+    const orderId = Number(session.metadata?.order_id);
+
+    const { count } = await prisma.order.updateMany({
+      where: { id: orderId, status: OrderStatus.PENDING },
+      data: { status: OrderStatus.CANCELLED },
+    });
+
+    if (count > 0) {
+      logger.info({ orderId, eventType: event.type }, '[STRIPE_WEBHOOK] order cancelled');
+    }
+  }
+
   return new Response(null, { status: 200 });
 }
