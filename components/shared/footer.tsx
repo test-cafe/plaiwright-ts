@@ -13,7 +13,7 @@ export const Footer: React.FC = () => {
             <Image src="/logo.png" width={32} height={32} alt="Next Pizza logo" />
             <div>
               <p className="text-lg uppercase font-black leading-none">Next Pizza</p>
-              <p className="text-xs text-gray-600">it doesn't get any tastier</p>
+              <p className="text-xs text-gray-600">it doesn&apos;t get any tastier</p>
             </div>
           </Link>
 

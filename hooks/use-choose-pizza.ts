@@ -33,13 +33,17 @@ export const useChoosePizza = (items?: IProduct['items']) => {
     disabled: !isActiveSize(obj.value),
   }));
 
-  React.useEffect(() => {
-    const availableSize = availablePizzaSizes?.find((item) => !item.disabled);
-
+  // Adjust during render (not in an effect): when the type changes, snap to
+  // the first size available for it. prevType starts as null so the same
+  // adjustment also applies on the initial render.
+  const [prevType, setPrevType] = React.useState<PizzaType | null>(null);
+  if (prevType !== type) {
+    setPrevType(type);
+    const availableSize = availablePizzaSizes.find((item) => !item.disabled);
     if (availableSize) {
       setSize(Number(availableSize.value) as PizzaSize);
     }
-  }, [type]);
+  }
 
   const addPizza = async () => {
     if (productItem) {

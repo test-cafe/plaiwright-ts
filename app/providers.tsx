@@ -5,10 +5,15 @@ import { Toaster } from 'react-hot-toast';
 import NextTopLoader from 'nextjs-toploader';
 import { SessionProvider } from 'next-auth/react';
 
-export const Providers: React.FC<React.PropsWithChildren> = ({ children }) => {
-  const [mounted, setMounted] = React.useState(false);
+const emptySubscribe = () => () => {};
 
-  React.useEffect(() => setMounted(true), []);
+export const Providers: React.FC<React.PropsWithChildren> = ({ children }) => {
+  // Render nothing during SSR/hydration to avoid mismatches from client-only children.
+  const mounted = React.useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false,
+  );
 
   if (!mounted) {
     return null;

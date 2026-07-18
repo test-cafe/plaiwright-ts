@@ -91,7 +91,7 @@ export default function CartPage() {
       await fetchCartItems();
 
       if (url) {
-        location.href = url;
+        window.location.assign(url);
       }
     } catch (error) {
       const message =
