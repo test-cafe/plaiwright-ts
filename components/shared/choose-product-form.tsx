@@ -68,6 +68,7 @@ export const ChooseProductForm: React.FC<Props> = ({
           loading={loading}
           onClick={handleClickAdd}
           data-testid="add-to-cart-button"
+          aria-label={`Add to cart for ${formatMoney(productPrice)}`}
           className="h-[55px] px-10 text-base rounded-[18px] w-full mt-10">
           Add to cart for {formatMoney(productPrice)}
         </Button>

@@ -11,9 +11,12 @@ test.describe('@smoke Guest checkout flow', () => {
     await driver.page.locator('[data-testid="product-card"]').first().click();
     await driver.page.waitForURL(PRODUCT_URL_PATTERN);
     await driver.product.addToCart();
+    // The modal closes itself (and navigates back) after adding — wait for the
+    // close so its navigation doesn't race the goto('/cart') below.
+    await expect(driver.page.locator('[role="dialog"]')).toBeHidden();
     await driver.cart.goto();
 
-    expect(await driver.cart.getItemCount()).toBeGreaterThan(0);
+    await expect(driver.page.locator('[data-testid="cart-item"]').first()).toBeVisible();
 
     await driver.dispose();
   });
@@ -25,7 +28,9 @@ test.describe('@smoke Guest checkout flow', () => {
     await driver.page.locator('[data-testid="product-card"]').first().click();
     await driver.page.waitForURL(PRODUCT_URL_PATTERN);
     await driver.product.addToCart();
+    await expect(driver.page.locator('[role="dialog"]')).toBeHidden();
     await driver.cart.goto();
+    await expect(driver.page.locator('[data-testid="cart-item"]').first()).toBeVisible();
     const initialTotal = await driver.cart.getTotal();
     const firstItemText = (await driver.page
       .locator('[data-testid="cart-item"]')
@@ -34,7 +39,7 @@ test.describe('@smoke Guest checkout flow', () => {
 
     await driver.cart.updateQuantity(firstItemText, 'plus');
 
-    expect(await driver.cart.getTotal()).toBeGreaterThan(initialTotal);
+    await expect.poll(() => driver.cart.getTotal()).toBeGreaterThan(initialTotal);
 
     await driver.dispose();
   });

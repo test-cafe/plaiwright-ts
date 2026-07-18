@@ -12,7 +12,10 @@ export default withAuth(
   },
   {
     callbacks: {
-      authorized: ({ token }) => !!token,
+      // Always authorized so the proxy function above runs even without a
+      // token; unauthenticated users get redirected to `/` there instead of
+      // the NextAuth signin page, matching app/dashboard/layout.tsx.
+      authorized: () => true,
     },
   },
 );

@@ -36,6 +36,7 @@ export const CartButton: React.FC<Props> = ({ className, compact }) => {
       <Button
         loading={loading}
         data-testid="cart-button"
+        aria-label={`Cart, ${items.length} items`}
         className={cn('group relative', { 'w-[105px]': loading }, className)}>
         <b>{formatMoney(totalAmount)}</b>
         <span className="h-full w-[1px] bg-white/30 mx-3" />

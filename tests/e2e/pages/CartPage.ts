@@ -4,7 +4,13 @@ export class CartPage {
   constructor(private page: Page) {}
 
   async goto() {
-    await this.page.goto('/cart');
+    try {
+      await this.page.goto('/cart');
+    } catch {
+      // A pending client-side navigation (e.g. the product modal's
+      // router.back() committing) can abort the first goto — retry once.
+      await this.page.goto('/cart');
+    }
   }
 
   async getItemCount() {

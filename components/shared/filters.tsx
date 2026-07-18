@@ -39,17 +39,30 @@ export const Filters: React.FC<Props> = ({ className }) => {
   const updateQueryParams = React.useMemo(
     () =>
       debounce((params) => {
-        router.push(
-          `?${qs.stringify(params, {
-            arrayFormat: 'comma',
-          })}`,
-          { scroll: false },
-        );
+        const query = qs.stringify(params, { arrayFormat: 'comma' });
+
+        // No-op pushes (query already matches the URL) cancel any in-flight
+        // navigation — e.g. clicking a product card right after page load
+        // would bounce back to `/` when this push committed.
+        if ((query ? `?${query}` : '') === window.location.search) {
+          return;
+        }
+
+        router.push(`?${query}`, { scroll: false });
       }, 300),
     [],
   );
 
+  const isFirstRender = React.useRef(true);
+
   React.useEffect(() => {
+    // Skip the mount run: pushing the (unchanged) params on mount cancels any
+    // in-flight navigation, e.g. a product-card click bounces back to `/`.
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
     updateQueryParams({
       ...filters,
       ingredients: Array.from(selectedIngredientsIds),
